@@ -5,7 +5,7 @@ export type Lang = "bn" | "en";
 export type VoiceChoice = Pick<SpeechSynthesisVoice, "name" | "lang" | "voiceURI"> & { localService?: boolean; default?: boolean };
 const LOCALE: Record<Lang, string> = { bn: "bn-BD", en: "en-US" };
 
-/** Clean markdown and syntax for natural, fluent spoken output. */
+/** Clean markdown and syntax for natural, crystal-clear spoken output. */
 export function cleanForSpeech(md: string) {
   const isBn = /[\u0980-\u09FF]/.test(md);
   return md
@@ -15,17 +15,28 @@ export function cleanForSpeech(md: string) {
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\[(.*?)\]\(.*?\)/g, "$1")
     .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
+    // Ensure list bullets and numbered items have clear sentence pauses
+    .replace(/^[ \t]*[-*•]\s+/gm, isBn ? "। " : ". ")
+    .replace(/^[ \t]*(\d+|[১-৯]+)\.\s+/gm, isBn ? "। $1 নম্বর, " : ". Step $1, ")
+    // Clean parentheses so technical terms have natural micro-pauses
+    .replace(/\s*\(\s*([^()]+)\s*\)\s*/g, ", $1, ")
     .replace(/[#*_>|~]/g, " ")
     .replace(/--+/g, " ")
+    // Replace colons before explanations with natural pause commas
+    .replace(/:\s+/g, ", ")
+    .replace(/[,،]{2,}/g, ",")
+    .replace(/[।\.]{2,}/g, isBn ? "। " : ". ")
+    .replace(/\s*([,।\.\?!])\s*/g, "$1 ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-/** Split at sentence and clause boundaries so speech engines do not rush long answers. */
+/** Split at sentence boundaries so speech engines maintain natural cadence and clear enunciation. */
 export function chunkForSpeech(text: string, maxLength = 220) {
   const sentences = cleanForSpeech(text).match(/[^.!?।]+[.!?।]?/g) ?? [];
   const chunks: string[] = [];
   let current = "";
+
   for (const sentence of sentences) {
     const words = sentence.trim().split(/\s+/);
     for (const word of words) {
@@ -33,13 +44,16 @@ export function chunkForSpeech(text: string, maxLength = 220) {
       if (current && `${current} ${word}`.length > maxLength) {
         chunks.push(current);
         current = word;
-      } else current = current ? `${current} ${word}` : word;
+      } else {
+        current = current ? `${current} ${word}` : word;
+      }
     }
     if (current && /[.!?।]$/.test(current)) {
       chunks.push(current);
       current = "";
     }
   }
+
   if (current) chunks.push(current);
   return chunks;
 }
@@ -69,6 +83,65 @@ export function pickVoice<T extends VoiceChoice>(voices: T[], lang: Lang, prefer
   return scored[0]?.voice;
 }
 
+/** Web Audio speech enhancer: presence equalizer + crispness high-shelf + gentle dynamics leveling */
+function attachVoiceClarity(audio: HTMLAudioElement) {
+  if (typeof window === "undefined") return;
+  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioContextClass) return;
+
+  try {
+    if ((audio as any).__jervisEnhanced) return;
+    (audio as any).__jervisEnhanced = true;
+
+    const ctx = new AudioContextClass();
+    const source = ctx.createMediaElementSource(audio);
+
+    // 1. High-pass filter at 85Hz to cut boomy low-end mud & mic rumble
+    const highpass = ctx.createBiquadFilter();
+    highpass.type = "highpass";
+    highpass.frequency.value = 85;
+
+    // 2. Speech presence boost around 3.2kHz (clarity of consonants, fricatives, and conjuncts)
+    const presence = ctx.createBiquadFilter();
+    presence.type = "peaking";
+    presence.frequency.value = 3200;
+    presence.Q.value = 1.1;
+    presence.gain.value = 3.5;
+
+    // 3. High-shelf brilliance boost at 6.5kHz for crisp, airy, modern studio intelligibility
+    const brilliance = ctx.createBiquadFilter();
+    brilliance.type = "highshelf";
+    brilliance.frequency.value = 6500;
+    brilliance.gain.value = 2.0;
+
+    // 4. Dynamics compressor to even out syllables so soft sounds are clearly heard
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -18;
+    compressor.knee.value = 10;
+    compressor.ratio.value = 3;
+    compressor.attack.value = 0.005;
+    compressor.release.value = 0.12;
+
+    source.connect(highpass);
+    highpass.connect(presence);
+    presence.connect(brilliance);
+    brilliance.connect(compressor);
+    compressor.connect(ctx.destination);
+
+    if (ctx.state === "suspended") {
+      const resume = () => {
+        void ctx.resume();
+        window.removeEventListener("pointerdown", resume);
+        window.removeEventListener("keydown", resume);
+      };
+      window.addEventListener("pointerdown", resume, { once: true });
+      window.addEventListener("keydown", resume, { once: true });
+    }
+  } catch {
+    // Graceful fallback: audio plays standard output if Web Audio is restricted
+  }
+}
+
 /** Speech recognition, crystal-clear HD speech output and holographic core audio reactive level. */
 export function useVoice(lang: Lang) {
   const [listening, setListening] = useState(false);
@@ -84,13 +157,16 @@ export function useVoice(lang: Lang) {
   const selectedRef = useRef<Record<Lang, string>>({ en: "", bn: "" });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const tokenRef = useRef(0);
+  const activeUtterancesRef = useRef<SpeechSynthesisUtterance[]>([]);
   const supported = typeof window !== "undefined" && !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
   const primeSpeech = useCallback(() => {
     if (!audioRef.current && typeof Audio !== "undefined") {
-      audioRef.current = new Audio();
-      audioRef.current.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
-      void audioRef.current.play().catch(() => {});
+      const audio = new Audio();
+      audio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
+      attachVoiceClarity(audio);
+      audioRef.current = audio;
+      void audio.play().catch(() => {});
     }
     const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
     if (synth) {
@@ -211,15 +287,18 @@ export function useVoice(lang: Lang) {
     const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
     if (!synth) { setSpeaking(false); return; }
     synth.cancel();
+    activeUtterancesRef.current = [];
     const selected = pickVoice(voices, answerLang, selectedRef.current[answerLang]);
     const chunks = chunkForSpeech(text);
     if (!chunks.length) return;
+
     chunks.forEach((chunk, index) => {
       const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.lang = selected?.lang || LOCALE[answerLang];
       if (selected) utterance.voice = selected;
-      utterance.rate = 0.92;
-      utterance.pitch = 0.96;
+      // Bengali uses 0.95 rate and 1.02 pitch for bright, articulate consonants; English retains 0.92 / 0.96
+      utterance.rate = answerLang === "bn" ? 0.95 : 0.92;
+      utterance.pitch = answerLang === "bn" ? 1.02 : 0.96;
       utterance.volume = 1;
       utterance.onstart = () => setSpeaking(true);
       utterance.onboundary = () => { levelRef.current = 0.48 + Math.random() * 0.38; };
@@ -227,10 +306,12 @@ export function useVoice(lang: Lang) {
         if (index === chunks.length - 1) {
           setSpeaking(false);
           levelRef.current = 0;
+          activeUtterancesRef.current = [];
         }
       };
       utterance.onend = finish;
       utterance.onerror = finish;
+      activeUtterancesRef.current.push(utterance);
       synth.speak(utterance);
     });
   }, [voices]);
@@ -268,19 +349,30 @@ export function useVoice(lang: Lang) {
       }
       if (i + 1 < chunks.length) next = fetchClip(chunks[i + 1]!);
 
-      const audio = audioRef.current ?? (audioRef.current = new Audio());
-      audio.src = url;
-      try {
-        await new Promise<void>((resolve, reject) => {
-          audio.onended = () => resolve();
-          audio.onerror = () => reject(new Error("playback"));
-          audio.onpause = () => { if (token !== tokenRef.current) resolve(); };
-          audio.play().catch(reject);
-        });
-      } catch {
-        URL.revokeObjectURL(url);
-        if (token === tokenRef.current) speakDevice(chunks.slice(i).join(" "), answerLang);
-        return;
+      let audio = audioRef.current;
+      if (!audio && typeof Audio !== "undefined") {
+        audio = new Audio();
+        attachVoiceClarity(audio);
+        audioRef.current = audio;
+      } else if (audio) {
+        attachVoiceClarity(audio);
+      }
+
+      if (audio) {
+        audio.src = url;
+        try {
+          await new Promise<void>((resolve, reject) => {
+            if (!audio) return resolve();
+            audio.onended = () => resolve();
+            audio.onerror = () => reject(new Error("playback"));
+            audio.onpause = () => { if (token !== tokenRef.current) resolve(); };
+            audio.play().catch(reject);
+          });
+        } catch {
+          URL.revokeObjectURL(url);
+          if (token === tokenRef.current) speakDevice(chunks.slice(i).join(" "), answerLang);
+          return;
+        }
       }
       URL.revokeObjectURL(url);
       if (token !== tokenRef.current) return;
@@ -308,6 +400,7 @@ export function useVoice(lang: Lang) {
     tokenRef.current++;
     audioRef.current?.pause();
     window.speechSynthesis?.cancel();
+    activeUtterancesRef.current = [];
     setSpeaking(false);
     levelRef.current = 0;
   }, []);
@@ -323,6 +416,7 @@ export function useVoice(lang: Lang) {
     tokenRef.current++;
     audioRef.current?.pause();
     window.speechSynthesis?.cancel();
+    activeUtterancesRef.current = [];
   }, [stopMeter]);
 
   return {
