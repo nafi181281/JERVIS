@@ -23,9 +23,9 @@ function pcmToWav(pcm: Buffer, sampleRate: number, channels = 1, bitsPerSample =
   return Buffer.concat([header, pcm]);
 }
 
-/** Split clean text into chunks under 160 characters so Google TTS limits are respected. */
-function splitTextForGoogleTTS(text: string, maxLen = 150): string[] {
-  const sentences = text.split(/(?<=[.!?।\n])\s+/);
+/** Split clean text into natural, bite-sized phrases under 110 characters for distinct, crisp enunciation. */
+function splitTextForGoogleTTS(text: string, maxLen = 110): string[] {
+  const sentences = text.split(/(?<=[.!?।\n,;:—])\s+/);
   const result: string[] = [];
   let cur = "";
 
@@ -63,14 +63,14 @@ function splitTextForGoogleTTS(text: string, maxLen = 150): string[] {
     }
   }
   if (cur.trim()) result.push(cur.trim());
-  return result.slice(0, 8);
+  return result.slice(0, 24);
 }
 
 /** Fetch high-definition neural Google TTS audio for natural Bengali and English. */
 async function fetchGoogleHDTTS(text: string, lang: string): Promise<Response> {
   const isBn = lang === "bn" || /[\u0980-\u09FF]/.test(text);
   const ttsLang = isBn ? "bn" : "en-GB";
-  const chunks = splitTextForGoogleTTS(text, 140);
+  const chunks = splitTextForGoogleTTS(text, 110);
 
   if (!chunks.length) {
     return Response.json({ error: "Nothing to say." }, { status: 400 });
@@ -112,7 +112,7 @@ export const Route = createFileRoute("/api/speech")({
     handlers: {
       POST: async ({ request }) => {
         const { text, lang } = (await request.json()) as { text?: string; lang?: string };
-        const clean = (text ?? "").trim().slice(0, 1000);
+        const clean = (text ?? "").trim().slice(0, 1500);
         if (!clean) return Response.json({ error: "Nothing to say." }, { status: 400 });
 
         const apiKey = process.env["GEMINI_API_KEY"];
@@ -122,8 +122,8 @@ export const Route = createFileRoute("/api/speech")({
           try {
             const isBn = lang === "bn" || /[\u0980-\u09FF]/.test(clean);
             const style = isBn
-              ? "Speak in clear, natural Bangladeshi Bengali, calm, polite and well paced, like a refined assistant: "
-              : "Speak in a calm, crisp, refined British butler tone, clearly articulated and well paced: ";
+              ? "Speak in crystal-clear, articulate, natural Bangladeshi Bengali with distinct pronunciation, calm pacing and polite tone, like a world-class tutor: "
+              : "Speak in a crystal-clear, articulate, refined tone with crisp diction and calm, measured pacing: ";
 
             const upstream = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
