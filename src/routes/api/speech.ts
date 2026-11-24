@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Gemini's current, free-tier-friendly TTS model (gemini-3.1-flash-tts-preview is now legacy).
-const MODEL = "gemini-3.8-flash-lite-tts";
+// Gemini's audio-capable model (configurable via GEMINI_TTS_MODEL).
+const MODEL = process.env["GEMINI_TTS_MODEL"] || "gemini-2.0-flash";
 
 /** Gemini TTS returns raw PCM (16-bit, mono); wrap it in a WAV header so <audio> can play it. */
 function pcmToWav(pcm: Buffer, sampleRate: number, channels = 1, bitsPerSample = 16): Buffer {
@@ -23,13 +23,16 @@ function pcmToWav(pcm: Buffer, sampleRate: number, channels = 1, bitsPerSample =
   return Buffer.concat([header, pcm]);
 }
 
-/** Turns one short JERVIS sentence into a clear WAV clip (Bengali or English) via Gemini's free TTS. */
+/** Turns one short JERVIS sentence into a clear WAV clip (Bengali or English) via Gemini's TTS. */
 export const Route = createFileRoute("/api/speech")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const apiKey = process.env["GEMINI_API_KEY"];
-        if (!apiKey) return Response.json({ error: "Voice is not configured." }, { status: 500 });
+        // When not configured, return 503 so client-side speech hook seamlessly falls back to device SpeechSynthesis
+        if (!apiKey || apiKey.trim() === "" || apiKey === "AIzaSy...") {
+          return Response.json({ error: "Voice key not configured; using device speech." }, { status: 503 });
+        }
         const { text, lang } = (await request.json()) as { text?: string; lang?: string };
         const clean = (text ?? "").trim().slice(0, 600);
         if (!clean) return Response.json({ error: "Nothing to say." }, { status: 400 });
