@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Play, Bug, Repeat, BookOpen, Volume2, Square } from "lucide-react";
+import { Play, Bug, Repeat, BookOpen, Volume2, Square, Copy, Check, RotateCcw } from "lucide-react";
 import { Shell, Panel } from "@/components/jervis/Shell";
 import { CodeEditor, LANGS, type LangId } from "@/components/jervis/CodeEditor";
 import { Markdown } from "@/components/jervis/Markdown";
@@ -56,9 +56,11 @@ function EditorPage() {
   const [spoken, setSpoken] = useState<Lang>("bn");
   const [mode, setMode] = useState<JervisMode>("explain");
   const [local, setLocal] = useState<{ out: string; error?: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const voice = useVoice(spoken);
   const chat = useJervisChat(mode, {
+    lang: spoken,
     onReply: (t) => {
       voice.speak(t);
     },
@@ -83,31 +85,70 @@ function EditorPage() {
     if (lang === "javascript") {
       const r = runJs(code);
       setLocal(r);
-      if (r.error) fire("check", `This ${label} code threw: ${r.error}\n${block}`);
-    } else fire("simulate", `Run this ${label} program and show its output:\n${block}`);
+      if (r.error) {
+        fire("check", `This ${label} code threw an error:\n${r.error}\n${block}`);
+      } else {
+        fire("simulate", `Run this ${label} program and explain its output:\n${block}`);
+      }
+    } else {
+      fire("simulate", `Run this ${label} program and show its output:\n${block}`);
+    }
+  };
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const resetSample = () => {
+    setCode(SAMPLE[lang]);
+    setLocal(null);
   };
 
   return (
     <Shell>
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Editor" className="min-w-0">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <select
-              value={lang}
-              onChange={(e) => {
-                const l = e.target.value as LangId;
-                setLang(l);
-                setCode(SAMPLE[l]);
-              }}
-              className="hud-select"
-            >
-              {LANGS.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
-            <LangToggle lang={spoken} setLang={setSpoken} />
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={lang}
+                onChange={(e) => {
+                  const l = e.target.value as LangId;
+                  setLang(l);
+                  setCode(SAMPLE[l]);
+                  setLocal(null);
+                }}
+                className="hud-select"
+              >
+                {LANGS.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              <LangToggle lang={spoken} setLang={setSpoken} />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={copyCode}
+                className="hud-btn text-xs"
+                title="Copy code"
+              >
+                {copied ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+              <button
+                type="button"
+                onClick={resetSample}
+                className="hud-btn text-xs"
+                title="Reset to sample code"
+              >
+                <RotateCcw size={14} /> Reset
+              </button>
+            </div>
           </div>
           <VoicePicker voice={voice} className="mb-3 w-full" />
           <CodeEditor value={code} onChange={setCode} lang={lang} />
