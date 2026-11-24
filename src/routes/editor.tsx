@@ -36,7 +36,11 @@ const SAMPLE: Record<LangId, string> = {
 function runJs(code: string): { out: string; error?: string } {
   const logs: string[] = [];
   const fmt = (a: unknown[]) => a.map((x) => (typeof x === "object" ? JSON.stringify(x) : String(x))).join(" ");
-  const fake = { log: (...a: unknown[]) => logs.push(fmt(a)), error: (...a: unknown[]) => logs.push("Error: " + fmt(a)), warn: (...a: unknown[]) => logs.push(fmt(a)) };
+  const fake = {
+    log: (...a: unknown[]) => logs.push(fmt(a)),
+    error: (...a: unknown[]) => logs.push("Error: " + fmt(a)),
+    warn: (...a: unknown[]) => logs.push(fmt(a)),
+  };
   try {
     new Function("console", code)(fake);
     return { out: logs.join("\n") || "(no output)" };
@@ -49,16 +53,23 @@ function EditorPage() {
   const [lang, setLang] = useState<LangId>("javascript");
   const [code, setCode] = useState(SAMPLE.javascript);
   const [target, setTarget] = useState<LangId>("python");
-  const [spoken, setSpoken] = useState<Lang>("en");
+  const [spoken, setSpoken] = useState<Lang>("bn");
   const [mode, setMode] = useState<JervisMode>("explain");
   const [local, setLocal] = useState<{ out: string; error?: string } | null>(null);
+
   const voice = useVoice(spoken);
-  const chat = useJervisChat(mode, { onReply: (t) => (mode === "check" || mode === "explain") && voice.speak(t) });
+  const chat = useJervisChat(mode, {
+    onReply: (t) => {
+      voice.speak(t);
+    },
+  });
+
   const label = LANGS.find((l) => l.id === lang)!.label;
   const reply = [...chat.messages].reverse().find((m) => m.role === "assistant");
   const langNote = spoken === "bn" ? "\n\nPlease answer in Bengali (বাংলা)." : "";
 
   const fire = (m: JervisMode, prompt: string) => {
+    voice.unlock();
     setMode(m);
     chat.setMessages([]);
     voice.stopSpeaking();
@@ -67,6 +78,7 @@ function EditorPage() {
   const block = "```" + lang + "\n" + code + "\n```";
 
   const run = () => {
+    voice.unlock();
     setLocal(null);
     if (lang === "javascript") {
       const r = runJs(code);
@@ -80,24 +92,56 @@ function EditorPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Editor" className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <select value={lang} onChange={(e) => { const l = e.target.value as LangId; setLang(l); setCode(SAMPLE[l]); }} className="hud-select">
-              {LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+            <select
+              value={lang}
+              onChange={(e) => {
+                const l = e.target.value as LangId;
+                setLang(l);
+                setCode(SAMPLE[l]);
+              }}
+              className="hud-select"
+            >
+              {LANGS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
+                </option>
+              ))}
             </select>
             <LangToggle lang={spoken} setLang={setSpoken} />
           </div>
           <VoicePicker voice={voice} className="mb-3 w-full" />
           <CodeEditor value={code} onChange={setCode} lang={lang} />
           <div className="mt-3 flex flex-wrap gap-2">
-            <button onClick={run} className="hud-btn hud-btn-active"><Play size={15} /> Run</button>
-            <button onClick={() => fire("check", `Check this ${label} code for errors:\n${block}`)} className="hud-btn"><Bug size={15} /> Check errors</button>
-            <button onClick={() => fire("explain", `Explain this ${label} code line by line:\n${block}`)} className="hud-btn"><BookOpen size={15} /> Explain</button>
+            <button onClick={run} className="hud-btn hud-btn-active">
+              <Play size={15} /> Run
+            </button>
+            <button onClick={() => fire("check", `Check this ${label} code for errors:\n${block}`)} className="hud-btn">
+              <Bug size={15} /> Check errors
+            </button>
+            <button onClick={() => fire("explain", `Explain this ${label} code line by line:\n${block}`)} className="hud-btn">
+              <BookOpen size={15} /> Explain
+            </button>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">Convert to</span>
             <select value={target} onChange={(e) => setTarget(e.target.value as LangId)} className="hud-select">
-              {LANGS.filter((l) => l.id !== lang).map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+              {LANGS.filter((l) => l.id !== lang).map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
+                </option>
+              ))}
             </select>
-            <button onClick={() => fire("convert", `Convert this ${label} code to ${LANGS.find((l) => l.id === target)!.label}:\n${block}`)} className="hud-btn"><Repeat size={15} /> Convert</button>
+            <button
+              onClick={() =>
+                fire(
+                  "convert",
+                  `Convert this ${label} code to ${LANGS.find((l) => l.id === target)!.label}:\n${block}`,
+                )
+              }
+              className="hud-btn"
+            >
+              <Repeat size={15} /> Convert
+            </button>
           </div>
         </Panel>
 
@@ -105,16 +149,42 @@ function EditorPage() {
           {local && (
             <div className="mb-3">
               <div className="mb-1 text-[10px] tracking-[0.3em] text-primary">CONSOLE</div>
-              <pre className="whitespace-pre-wrap rounded-md border border-primary/20 bg-background/80 p-3 font-mono text-xs">{local.out}{local.error && <span className="text-destructive">{"\n" + local.error}</span>}</pre>
+              <pre className="whitespace-pre-wrap rounded-md border border-primary/20 bg-background/80 p-3 font-mono text-xs">
+                {local.out}
+                {local.error && <span className="text-destructive">{"\n" + local.error}</span>}
+              </pre>
             </div>
           )}
           <div className="mb-2 flex gap-2">
-            {reply && <button onClick={() => voice.speak(textOf(reply))} className="hud-btn"><Volume2 size={14} /> Read aloud</button>}
-            {(voice.speaking || chat.busy) && <button onClick={() => { voice.stopSpeaking(); chat.stop(); }} className="hud-btn"><Square size={14} /> Stop</button>}
+            {reply && (
+              <button onClick={() => voice.speak(textOf(reply))} className="hud-btn">
+                <Volume2 size={14} /> Read aloud
+              </button>
+            )}
+            {(voice.speaking || chat.busy) && (
+              <button
+                onClick={() => {
+                  voice.stopSpeaking();
+                  chat.stop();
+                }}
+                className="hud-btn"
+              >
+                <Square size={14} /> Stop
+              </button>
+            )}
           </div>
           {chat.busy && !reply && <div className="animate-pulse text-sm text-primary">Analyzing…</div>}
           {chat.error && <div className="text-sm text-destructive">{chat.error.message}</div>}
-          {reply ? <Markdown>{textOf(reply)}</Markdown> : !chat.busy && !local && <p className="text-sm text-muted-foreground">Run, check, explain or convert your code — JERVIS will respond here and read bug reports aloud.</p>}
+          {reply ? (
+            <Markdown>{textOf(reply)}</Markdown>
+          ) : (
+            !chat.busy &&
+            !local && (
+              <p className="text-sm text-muted-foreground">
+                Run, check, explain or convert your code — JERVIS will respond here and read bug reports aloud.
+              </p>
+            )
+          )}
         </Panel>
       </div>
     </Shell>
