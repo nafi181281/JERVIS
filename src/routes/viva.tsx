@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Mic, MicOff, Send, Flag, RotateCcw } from "lucide-react";
+import { Mic, MicOff, Send, Flag, RotateCcw, Volume2, Square } from "lucide-react";
 import { Shell, Panel } from "@/components/jervis/Shell";
 import { Core } from "@/components/jervis/Core";
 import { Markdown } from "@/components/jervis/Markdown";
@@ -42,14 +42,18 @@ function Viva() {
   const started = chat.messages.length > 0;
 
   const answer = (t: string) => {
-    if (!t.trim() || chat.busy) return;
+    const val = t.trim();
+    if (!val || chat.busy) return;
     voice.unlock();
     voice.stopSpeaking();
-    chat.ask(t, "viva");
+    if (voice.listening) voice.stopListening();
+    chat.ask(val, "viva");
     setInput("");
   };
 
   useEffect(() => () => voice.stopSpeaking(), [voice.stopSpeaking]);
+
+  const latestAssistantMessage = [...chat.messages].reverse().find((m) => m.role === "assistant");
 
   return (
     <Shell>
@@ -84,19 +88,40 @@ function Viva() {
               </button>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => answer("finish — give my scorecard now")} className="hud-btn">
-                <Flag size={15} /> Finish & score
-              </button>
-              <button
-                onClick={() => {
-                  voice.stopSpeaking();
-                  chat.setMessages([]);
-                }}
-                className="hud-btn"
-              >
-                <RotateCcw size={15} /> New viva
-              </button>
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => answer("finish — give my scorecard now")} className="hud-btn">
+                  <Flag size={15} /> Finish & score
+                </button>
+                <button
+                  onClick={() => {
+                    voice.stopSpeaking();
+                    chat.setMessages([]);
+                  }}
+                  className="hud-btn"
+                >
+                  <RotateCcw size={15} /> New viva
+                </button>
+              </div>
+              <div className="flex gap-2 pt-1">
+                {latestAssistantMessage && (
+                  <button
+                    onClick={() => {
+                      voice.unlock();
+                      voice.speak(textOf(latestAssistantMessage));
+                    }}
+                    className="hud-btn text-xs"
+                    title="Repeat question"
+                  >
+                    <Volume2 size={14} /> Repeat question
+                  </button>
+                )}
+                {voice.speaking && (
+                  <button onClick={voice.stopSpeaking} className="hud-btn text-xs">
+                    <Square size={14} /> Stop
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </Panel>
@@ -123,7 +148,7 @@ function Viva() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                answer(input);
+                answer(input || voice.interim);
               }}
               className="mt-3 flex gap-2 border-t border-primary/20 pt-3"
             >
