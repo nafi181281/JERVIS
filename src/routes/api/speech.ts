@@ -24,7 +24,7 @@ function pcmToWav(pcm: Buffer, sampleRate: number, channels = 1, bitsPerSample =
 }
 
 /** Split clean text into chunks under 160 characters so Google TTS limits are respected. */
-function splitTextForGoogleTTS(text: string, maxLen = 160): string[] {
+function splitTextForGoogleTTS(text: string, maxLen = 150): string[] {
   const sentences = text.split(/(?<=[.!?।\n])\s+/);
   const result: string[] = [];
   let cur = "";
@@ -37,6 +37,16 @@ function splitTextForGoogleTTS(text: string, maxLen = 160): string[] {
         const words = sentence.split(/\s+/);
         let sub = "";
         for (const w of words) {
+          if (w.length > maxLen) {
+            if (sub) {
+              result.push(sub.trim());
+              sub = "";
+            }
+            for (let i = 0; i < w.length; i += maxLen) {
+              result.push(w.slice(i, i + maxLen));
+            }
+            continue;
+          }
           if ((sub + " " + w).length > maxLen) {
             if (sub) result.push(sub.trim());
             sub = w;
@@ -53,14 +63,14 @@ function splitTextForGoogleTTS(text: string, maxLen = 160): string[] {
     }
   }
   if (cur.trim()) result.push(cur.trim());
-  return result;
+  return result.slice(0, 8);
 }
 
 /** Fetch high-definition neural Google TTS audio for natural Bengali and English. */
 async function fetchGoogleHDTTS(text: string, lang: string): Promise<Response> {
   const isBn = lang === "bn" || /[\u0980-\u09FF]/.test(text);
   const ttsLang = isBn ? "bn" : "en-GB";
-  const chunks = splitTextForGoogleTTS(text, 150);
+  const chunks = splitTextForGoogleTTS(text, 140);
 
   if (!chunks.length) {
     return Response.json({ error: "Nothing to say." }, { status: 400 });
