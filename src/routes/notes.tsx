@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Volume2, VolumeX, Copy, Check, Search } from "lucide-react";
 import { Shell, Panel } from "@/components/jervis/Shell";
 import { Markdown } from "@/components/jervis/Markdown";
+import { useVoice, type Lang } from "@/hooks/use-voice";
+import { LangToggle } from "@/components/jervis/Controls";
 
 export const Route = createFileRoute("/notes")({
   head: () => ({
@@ -32,13 +35,82 @@ const SHEETS: Record<string, string> = {
 function Notes() {
   const keys = Object.keys(SHEETS);
   const [active, setActive] = useState(keys[0]!);
+  const [copied, setCopied] = useState(false);
+  const [query, setQuery] = useState("");
+  const [lang, setLang] = useState<Lang>("en");
+  const voice = useVoice(lang);
+
+  const filteredKeys = keys.filter(
+    (k) =>
+      k.toLowerCase().includes(query.toLowerCase()) ||
+      SHEETS[k]!.toLowerCase().includes(query.toLowerCase()),
+  );
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(SHEETS[active]!);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSpeak = () => {
+    voice.unlock();
+    if (voice.speaking) {
+      voice.stopSpeaking();
+    } else {
+      voice.speak(`${active} Cheat Sheet: ${SHEETS[active]!}`);
+    }
+  };
+
   return (
     <Shell>
-      <div className="mb-4 flex flex-wrap gap-2">
-        {keys.map((k) => <button key={k} onClick={() => setActive(k)} className={`hud-chip ${active === k ? "hud-btn-active" : ""}`}>{k}</button>)}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="relative min-w-[200px] flex-1 max-w-xs">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search cheat sheets…"
+            className="w-full rounded-md border border-primary/30 bg-background/60 py-1.5 pl-9 pr-3 text-xs outline-none focus:border-primary"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <LangToggle lang={lang} setLang={setLang} />
+          <button
+            type="button"
+            onClick={handleSpeak}
+            className={`hud-btn ${voice.speaking ? "hud-btn-active" : ""}`}
+            title={voice.speaking ? "Stop reading" : "Read note aloud"}
+          >
+            {voice.speaking ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            {voice.speaking ? "Stop" : "Read aloud"}
+          </button>
+          <button type="button" onClick={handleCopy} className="hud-btn" title="Copy markdown to clipboard">
+            {copied ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
       </div>
-      <Panel title={active}><Markdown>{SHEETS[active]!}</Markdown></Panel>
-      <p className="mt-3 text-xs text-muted-foreground">Need more depth? Ask JERVIS on the Core page — e.g. "Explain {active} with an example".</p>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(filteredKeys.length ? filteredKeys : keys).map((k) => (
+          <button
+            key={k}
+            onClick={() => {
+              setActive(k);
+              if (voice.speaking) voice.stopSpeaking();
+            }}
+            className={`hud-chip ${active === k ? "hud-btn-active" : ""}`}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+      <Panel title={active}>
+        <Markdown>{SHEETS[active]!}</Markdown>
+      </Panel>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Need more depth? Ask JERVIS on the Core page — e.g. "Explain {active} with an example".
+      </p>
     </Shell>
   );
 }
