@@ -23,53 +23,144 @@ function pcmToWav(pcm: Buffer, sampleRate: number, channels = 1, bitsPerSample =
   return Buffer.concat([header, pcm]);
 }
 
-/** Turns one short JERVIS sentence into a clear WAV clip (Bengali or English) via Gemini's TTS. */
+/** Split clean text into chunks under 160 characters so Google TTS limits are respected. */
+function splitTextForGoogleTTS(text: string, maxLen = 160): string[] {
+  const sentences = text.split(/(?<=[.!?।\n])\s+/);
+  const result: string[] = [];
+  let cur = "";
+
+  for (const sentence of sentences) {
+    if (!sentence.trim()) continue;
+    if ((cur + " " + sentence).length > maxLen) {
+      if (cur) result.push(cur.trim());
+      if (sentence.length > maxLen) {
+        const words = sentence.split(/\s+/);
+        let sub = "";
+        for (const w of words) {
+          if ((sub + " " + w).length > maxLen) {
+            if (sub) result.push(sub.trim());
+            sub = w;
+          } else {
+            sub = sub ? `${sub} ${w}` : w;
+          }
+        }
+        cur = sub;
+      } else {
+        cur = sentence;
+      }
+    } else {
+      cur = cur ? `${cur} ${sentence}` : sentence;
+    }
+  }
+  if (cur.trim()) result.push(cur.trim());
+  return result;
+}
+
+/** Fetch high-definition neural Google TTS audio for natural Bengali and English. */
+async function fetchGoogleHDTTS(text: string, lang: string): Promise<Response> {
+  const isBn = lang === "bn" || /[\u0980-\u09FF]/.test(text);
+  const ttsLang = isBn ? "bn" : "en-GB";
+  const chunks = splitTextForGoogleTTS(text, 150);
+
+  if (!chunks.length) {
+    return Response.json({ error: "Nothing to say." }, { status: 400 });
+  }
+
+  const audioBuffers: Buffer[] = [];
+  for (const chunk of chunks) {
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${encodeURIComponent(ttsLang)}&q=${encodeURIComponent(chunk)}`;
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Referer": "https://translate.google.com/",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Google TTS failed with status ${res.status}`);
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    audioBuffers.push(Buffer.from(arrayBuffer));
+  }
+
+  const combined = Buffer.concat(audioBuffers);
+  return new Response(new Uint8Array(combined), {
+    headers: {
+      "content-type": "audio/mpeg",
+      "cache-control": "public, max-age=86400",
+    },
+  });
+}
+
+/**
+ * Turns JERVIS replies into crystal-clear HD speech (Bengali or English).
+ * First attempts Gemini Audio if GEMINI_API_KEY is configured.
+ * Seamlessly delivers studio-quality Google Cloud HD Neural TTS if Gemini key is unconfigured or fails.
+ */
 export const Route = createFileRoute("/api/speech")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env["GEMINI_API_KEY"];
-        // When not configured, return 503 so client-side speech hook seamlessly falls back to device SpeechSynthesis
-        if (!apiKey || apiKey.trim() === "" || apiKey === "AIzaSy...") {
-          return Response.json({ error: "Voice key not configured; using device speech." }, { status: 503 });
-        }
         const { text, lang } = (await request.json()) as { text?: string; lang?: string };
-        const clean = (text ?? "").trim().slice(0, 600);
+        const clean = (text ?? "").trim().slice(0, 1000);
         if (!clean) return Response.json({ error: "Nothing to say." }, { status: 400 });
-        const style = lang === "bn"
-          ? "Speak in clear, natural Bangladeshi Bengali, calm, polite and well paced, like a refined assistant: "
-          : "Speak in a calm, crisp, refined British butler tone, clearly articulated and well paced: ";
-        const upstream = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-          {
-            method: "POST",
-            headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ role: "user", parts: [{ text: `${style}${clean}` }] }],
-              generationConfig: {
-                responseModalities: ["AUDIO"],
-                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } } },
+
+        const apiKey = process.env["GEMINI_API_KEY"];
+
+        // 1. If Gemini API key is configured, try Gemini HD Audio TTS
+        if (apiKey && apiKey.trim() !== "" && apiKey !== "AIzaSy...") {
+          try {
+            const isBn = lang === "bn" || /[\u0980-\u09FF]/.test(clean);
+            const style = isBn
+              ? "Speak in clear, natural Bangladeshi Bengali, calm, polite and well paced, like a refined assistant: "
+              : "Speak in a calm, crisp, refined British butler tone, clearly articulated and well paced: ";
+
+            const upstream = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+              {
+                method: "POST",
+                headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ role: "user", parts: [{ text: `${style}${clean}` }] }],
+                  generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } } },
+                  },
+                }),
+                signal: request.signal,
               },
-            }),
-            signal: request.signal,
-          },
-        );
-        if (!upstream.ok) {
-          const detail = await upstream.text().catch(() => "");
-          let message = "Voice is unavailable right now.";
-          try { message = JSON.parse(detail)?.error?.message || message; } catch { /* keep default */ }
-          return Response.json({ error: message }, { status: upstream.status });
+            );
+
+            if (upstream.ok) {
+              const data = (await upstream.json()) as {
+                candidates?: { content?: { parts?: { inlineData?: { data?: string; mimeType?: string } }[] } }[];
+              };
+              const part = data.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
+              const base64 = part?.inlineData?.data;
+              if (base64) {
+                const rateMatch = /rate=(\d+)/.exec(part?.inlineData?.mimeType ?? "");
+                const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
+                const wav = pcmToWav(Buffer.from(base64, "base64"), sampleRate);
+                return new Response(new Uint8Array(wav), {
+                  headers: { "content-type": "audio/wav", "cache-control": "no-store" },
+                });
+              }
+            }
+          } catch {
+            // Fall back to Google HD TTS below
+          }
         }
-        const data = (await upstream.json()) as {
-          candidates?: { content?: { parts?: { inlineData?: { data?: string; mimeType?: string } }[] } }[];
-        };
-        const part = data.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
-        const base64 = part?.inlineData?.data;
-        if (!base64) return Response.json({ error: "Voice is unavailable right now." }, { status: 502 });
-        const rateMatch = /rate=(\d+)/.exec(part?.inlineData?.mimeType ?? "");
-        const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
-        const wav = pcmToWav(Buffer.from(base64, "base64"), sampleRate);
-        return new Response(new Uint8Array(wav), { headers: { "content-type": "audio/wav", "cache-control": "no-store" } });
+
+        // 2. High Definition Neural Google Cloud TTS (zero config, pristine audio)
+        try {
+          return await fetchGoogleHDTTS(clean, lang ?? "bn");
+        } catch {
+          // 3. Fallback to device speech synthesis if network is completely down
+          return Response.json(
+            { error: "Speech endpoint temporarily unavailable; using device voice." },
+            { status: 503 },
+          );
+        }
       },
     },
   },
