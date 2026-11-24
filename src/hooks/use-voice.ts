@@ -5,18 +5,23 @@ export type Lang = "bn" | "en";
 export type VoiceChoice = Pick<SpeechSynthesisVoice, "name" | "lang" | "voiceURI"> & { localService?: boolean; default?: boolean };
 const LOCALE: Record<Lang, string> = { bn: "bn-BD", en: "en-US" };
 
+/** Clean markdown and syntax for natural, fluent spoken output. */
 export function cleanForSpeech(md: string) {
+  const isBn = /[\u0980-\u09FF]/.test(md);
   return md
-    .replace(/```[\s\S]*?```/g, " The code is shown on screen. ")
-    .replace(/^\s*\|?[\s:|-]+\|?\s*$/gm, " ")
+    .replace(/---\s*>\s*💡[\s\S]*$/gi, "")
+    .replace(/```[\s\S]*?```/g, isBn ? " কোডটি স্ক্রিনে বিস্তারিত দেওয়া হয়েছে। " : " The code is shown on screen. ")
+    .replace(/(?:^|\n)(?:[ \t]*\|[^\n]+\|[ \t]*\r?\n?)+/g, isBn ? " বিস্তারিত ছকটি স্ক্রিনে প্রদর্শিত হয়েছে। " : " The structured table is shown on screen. ")
     .replace(/`([^`]+)`/g, "$1")
-    .replace(/[#*_>|~]/g, " ")
     .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
+    .replace(/[#*_>|~]/g, " ")
+    .replace(/--+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-/** Split at sentence and clause boundaries so mobile speech engines do not rush long answers. */
+/** Split at sentence and clause boundaries so speech engines do not rush long answers. */
 export function chunkForSpeech(text: string, maxLength = 220) {
   const sentences = cleanForSpeech(text).match(/[^.!?।]+[.!?।]?/g) ?? [];
   const chunks: string[] = [];
@@ -64,7 +69,7 @@ export function pickVoice<T extends VoiceChoice>(voices: T[], lang: Lang, prefer
   return scored[0]?.voice;
 }
 
-/** Browser speech recognition, carefully paced speech output and a 0..1 level for the core. */
+/** Speech recognition, crystal-clear HD speech output and holographic core audio reactive level. */
 export function useVoice(lang: Lang) {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -81,6 +86,35 @@ export function useVoice(lang: Lang) {
   const tokenRef = useRef(0);
   const supported = typeof window !== "undefined" && !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
+  const primeSpeech = useCallback(() => {
+    if (!audioRef.current && typeof Audio !== "undefined") {
+      audioRef.current = new Audio();
+      audioRef.current.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
+      void audioRef.current.play().catch(() => {});
+    }
+    const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
+    if (synth) {
+      try {
+        synth.cancel();
+        const unlock = new SpeechSynthesisUtterance("");
+        unlock.volume = 0;
+        synth.speak(unlock);
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  // Unlock browser audio immediately on first user interaction
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const unlockHandler = () => primeSpeech();
+    window.addEventListener("pointerdown", unlockHandler, { once: true, passive: true });
+    window.addEventListener("keydown", unlockHandler, { once: true, passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlockHandler);
+      window.removeEventListener("keydown", unlockHandler);
+    };
+  }, [primeSpeech]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem("jervis-speech-voices");
@@ -90,7 +124,7 @@ export function useVoice(lang: Lang) {
   }, [lang]);
 
   useEffect(() => {
-    const synth = window.speechSynthesis;
+    const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
     if (!synth) return;
     const load = () => setVoices(synth.getVoices());
     load();
@@ -116,21 +150,6 @@ export function useVoice(lang: Lang) {
     void meterContextRef.current?.close();
     meterContextRef.current = null;
   }, []);
-
-  const primeSpeech = () => {
-    // Unlock one reusable audio element during the tap so later replies can play on phones.
-    if (!audioRef.current && typeof Audio !== "undefined") {
-      audioRef.current = new Audio();
-      audioRef.current.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
-      void audioRef.current.play().catch(() => {});
-    }
-    const synth = window.speechSynthesis;
-    if (!synth) return;
-    synth.cancel();
-    const unlock = new SpeechSynthesisUtterance("");
-    unlock.volume = 0;
-    synth.speak(unlock);
-  };
 
   const listen = useCallback(async (onFinal: (text: string) => void) => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -184,12 +203,12 @@ export function useVoice(lang: Lang) {
     rec.start();
     setListening(true);
     beep("on");
-  }, [lang, stopMeter]);
+  }, [lang, primeSpeech, stopMeter]);
 
   const stopListening = useCallback(() => recRef.current?.stop(), []);
 
   const speakDevice = useCallback((text: string, answerLang: Lang) => {
-    const synth = window.speechSynthesis;
+    const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
     if (!synth) { setSpeaking(false); return; }
     synth.cancel();
     const selected = pickVoice(voices, answerLang, selectedRef.current[answerLang]);
@@ -216,11 +235,12 @@ export function useVoice(lang: Lang) {
     });
   }, [voices]);
 
-  /** HD voice: server-rendered clear speech, one sentence group at a time, next clip prefetched. */
+  /** HD voice: server-rendered studio-clear speech, sentence by sentence, next clip prefetched. */
   const speakCloud = useCallback(async (text: string, answerLang: Lang) => {
     const token = ++tokenRef.current;
-    const chunks = chunkForSpeech(text, 300);
+    const chunks = chunkForSpeech(text, 280);
     if (!chunks.length) return;
+
     const fetchClip = (chunk: string) => fetch("/api/speech", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -229,17 +249,25 @@ export function useVoice(lang: Lang) {
       if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error || "Voice unavailable");
       return URL.createObjectURL(await res.blob());
     });
+
     setSpeaking(true);
     levelRef.current = 0.4;
     let next = fetchClip(chunks[0]!);
+
     for (let i = 0; i < chunks.length; i++) {
       let url: string;
-      try { url = await next; } catch {
+      try {
+        url = await next;
+      } catch {
         if (token === tokenRef.current) speakDevice(chunks.slice(i).join(" "), answerLang);
         return;
       }
-      if (token !== tokenRef.current) return URL.revokeObjectURL(url);
+      if (token !== tokenRef.current) {
+        URL.revokeObjectURL(url);
+        return;
+      }
       if (i + 1 < chunks.length) next = fetchClip(chunks[i + 1]!);
+
       const audio = audioRef.current ?? (audioRef.current = new Audio());
       audio.src = url;
       try {
@@ -257,7 +285,11 @@ export function useVoice(lang: Lang) {
       URL.revokeObjectURL(url);
       if (token !== tokenRef.current) return;
     }
-    if (token === tokenRef.current) { setSpeaking(false); levelRef.current = 0; }
+
+    if (token === tokenRef.current) {
+      setSpeaking(false);
+      levelRef.current = 0;
+    }
   }, [speakDevice]);
 
   const speak = useCallback((text: string) => {
@@ -265,8 +297,11 @@ export function useVoice(lang: Lang) {
     audioRef.current?.pause();
     tokenRef.current++;
     const answerLang: Lang = /[\u0980-\u09FF]/.test(text) ? "bn" : "en";
-    if (!selectedRef.current[answerLang] && typeof fetch !== "undefined") void speakCloud(text, answerLang);
-    else speakDevice(text, answerLang);
+    if (!selectedRef.current[answerLang] && typeof fetch !== "undefined") {
+      void speakCloud(text, answerLang);
+    } else {
+      speakDevice(text, answerLang);
+    }
   }, [speakCloud, speakDevice]);
 
   const stopSpeaking = useCallback(() => {
