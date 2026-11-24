@@ -41,10 +41,10 @@ function generateSmartFallback(input: string, mode: JervisMode, lang: "bn" | "en
       }
       return `আপনার উত্তরটি পেয়েছি, স্যার।
 
-**মূল্যায়ন:** চমৎকার ও যৌক্তিক ব্যাখ্যা। আপনি মূল ধারণার সাথে ব্যবহারিক ক্ষেত্রটিও সুন্দরভাবে তুলে ধরেছেন।
+**মূল্যায়ন:** চমৎকার ও যৌক্তিক ব্যাখ্যা। আপনি মূল ধারণার সাথে ব্যবহারিক ক্ষেত্রটিও সুন্দরভাবে তুলে ধরছেন।
 
 **পরবর্তী ভাইভা প্রশ্ন:**
-> *"একটি সিঙ্গলি লিঙ্কড লিস্টের মাঝে কোনো লুপ (Cycle) আছে কি না, তা ও(1) স্পেস কমপ্লেক্সিটিতে কীভাবে শনাক্ত করবেন? অ্যালগরিদমটির নাম ও কার্যপদ্ধতি বলুন।"*
+> *"একটি সিঙ্গলি লিঙ্কড লিস্টের মাঝে কোনো লুপ (Cycle) আছে কি না, তা O(1) স্পেস কমপ্লেক্সিটিতে কীভাবে শনাক্ত করবেন? অ্যালগরিদমটির নাম ও কার্যপদ্ধতি বলুন।"*
 
 *(আপনার উত্তরটি টাইপ করুন বা বলুন, স্যার। শেষ করতে চাইলে "finish" লিখুন)*`;
     } else {
@@ -82,7 +82,7 @@ function generateSmartFallback(input: string, mode: JervisMode, lang: "bn" | "en
 ### 🔍 কোড বিশ্লেষণ (Line-by-Line Breakdown)
 1. **শুরু ও ভ্যারিয়েবল ইনিশিয়ালাইজেশন:** প্রয়োজনীয় ডেটা স্ট্রাকচার ও মেমরি বরাদ্দ করা হয়েছে।
 2. **কন্ডিশন ও লজিক্যাল ফ্লো:** ইনপুট যাচাই এবং বেস-কেস চেক নিশ্চিত করা হয়েছে।
-3. **লুপ ট্রাভার্সাল:** উপাদানগুলোর উপর দিয়ে遍历 (iterate) করে ফলাফল আপডেট করা হচ্ছে।
+3. **লুপ ট্রাভার্সাল:** উপাদানগুলোর উপর দিয়ে iterate করে ফলাফল আপডেট করা হচ্ছে।
 
 ### ⏱️ কমপ্লেক্সিটি বিশ্লেষণ:
 - **Time Complexity:** $O(n)$ — ইনপুট সাইজের উপর নির্ভর করে একক পাসে সম্পন্ন হয়।
@@ -128,39 +128,7 @@ function generateSmartFallback(input: string, mode: JervisMode, lang: "bn" | "en
     }
   }
 
-  // Mode: Tutor / General
-  if (
-    text.includes("hi") ||
-    text.includes("hello") ||
-    text.includes("কেমন") ||
-    text.includes("kemon") ||
-    text.includes("jervis") ||
-    text === ""
-  ) {
-    if (isBn) {
-      return `শুভকামনা স্যার! আমি JERVIS — আপনার ব্যক্তিগত AI কোডিং মেন্টর ও সহকারী।
-
-আমি প্রস্তুত আছি আপনাকে সহায়তা করার জন্য:
-- 💻 **কোডিং ও সমস্যা সমাধান:** C, C++, Java, Python, JavaScript, TypeScript
-- 📚 **কম্পিউটার সায়েন্স ফান্ডামেন্টালস:** Data Structures, Algorithms, Big-O Complexity
-- 🗄️ **ডাটাবেজ ও ব্যাকএন্ড:** SQL, PostgreSQL, NeonDB, API Design
-- 🎙️ **ভাইভা ও ইন্টারভিউ প্রস্তুতি:** মক ইন্টারভিউ ও তাৎক্ষণিক ফিডব্যাক
-
-আজ কোন টপিকটি দিয়ে শুরু করতে চান, স্যার?`;
-    } else {
-      return `Greetings, Sir. I am JERVIS — your dedicated AI coding mentor and technical aide.
-
-I stand ready to assist you with:
-- 💻 **Programming & Problem Solving:** C, C++, Java, Python, JavaScript, TypeScript
-- 📚 **CS Fundamentals:** Data Structures, Algorithms, Big-O Complexity
-- 🗄️ **Databases & Systems:** SQL, PostgreSQL, NeonDB, API Architectures
-- 🎙️ **Technical Viva & Interviews:** Interactive viva simulation with structured feedback
-
-What shall we examine today, Sir?`;
-    }
-  }
-
-  // Specific Topics
+  // Specific Topics: Loops
   if (text.includes("loop") || text.includes("লুপ") || text.includes("for") || text.includes("while")) {
     if (isBn) {
       return `লুপ (Loop) সম্পর্কে বিস্তারিত আলোচনা, স্যার:
@@ -194,6 +162,7 @@ for (let i = 1; i <= 5; i++) {
     }
   }
 
+  // Specific Topics: Functions / Recursion
   if (text.includes("function") || text.includes("ফাংশন") || text.includes("recursion") || text.includes("রিকার্শন")) {
     if (isBn) {
       return `ফাংশন ও রিকার্শন সম্পর্কে সংক্ষেপে তুলে ধরছি, স্যার:
@@ -218,10 +187,42 @@ print(factorial(5)) # Output: 120
 \`\`\`
 
 ### ⏱️ কমপ্লেক্সিটি:
-- **Time:** $O(n)$
-- **Space:** $O(n)$ (কল স্ট্যাক মেমোরির কারণে)
+- **Time Complexity:** $O(n)$
+- **Space Complexity:** $O(n)$ (কল স্ট্যাক মেমোরির কারণে)
 
 *Shall we explore an iterative alternative or examine the call stack diagram, Sir?*`;
+    }
+  }
+
+  // Mode: Tutor / Greetings
+  if (
+    text.includes("hi") ||
+    text.includes("hello") ||
+    text.includes("কেমন") ||
+    text.includes("kemon") ||
+    text.includes("jervis") ||
+    text === ""
+  ) {
+    if (isBn) {
+      return `শুভকামনা স্যার! আমি JERVIS — আপনার ব্যক্তিগত AI কোডিং মেন্টর ও সহকারী।
+
+আমি প্রস্তুত আছি আপনাকে সহায়তা করার জন্য:
+- 💻 **কোডিং ও সমস্যা সমাধান:** C, C++, Java, Python, JavaScript, TypeScript
+- 📚 **কম্পিউটার সায়েন্স ফান্ডামেন্টালস:** Data Structures, Algorithms, Big-O Complexity
+- 🗄️ **ডাটাবেজ ও ব্যাকএন্ড:** SQL, PostgreSQL, NeonDB, API Design
+- 🎙️ **ভাইভা ও ইন্টারভিউ প্রস্তুতি:** মক ইন্টারভিউ ও তাৎক্ষণিক ফিডব্যাক
+
+আজ কোন টপিকটি দিয়ে শুরু করতে চান, স্যার?`;
+    } else {
+      return `Greetings, Sir. I am JERVIS — your dedicated AI coding mentor and technical aide.
+
+I stand ready to assist you with:
+- 💻 **Programming & Problem Solving:** C, C++, Java, Python, JavaScript, TypeScript
+- 📚 **CS Fundamentals:** Data Structures, Algorithms, Big-O Complexity
+- 🗄️ **Databases & Systems:** SQL, PostgreSQL, NeonDB, API Architectures
+- 🎙️ **Technical Viva & Interviews:** Interactive viva simulation with structured feedback
+
+What shall we examine today, Sir?`;
     }
   }
 
@@ -269,15 +270,20 @@ export function createFallbackChatResponse(
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
-      writer.write({ type: "start", messageId: `msg_${Date.now()}` });
+      const msgId = `msg_${Date.now()}`;
+      const textId = `part_${Date.now()}`;
+
+      writer.write({ type: "start", messageId: msgId });
+      writer.write({ type: "text-start", id: textId });
 
       // Split reply into natural sentence/phrase chunks for smooth streaming
       const chunks = reply.match(/.{1,16}/g) ?? [reply];
       for (const chunk of chunks) {
-        writer.write({ type: "text-delta", textDelta: chunk });
+        writer.write({ type: "text-delta", id: textId, delta: chunk });
         await new Promise((resolve) => setTimeout(resolve, 8));
       }
 
+      writer.write({ type: "text-end", id: textId });
       writer.write({ type: "finish" });
     },
   });
