@@ -322,14 +322,24 @@ export function useVoice(lang: Lang) {
     const chunks = chunkForSpeech(text, 280);
     if (!chunks.length) return;
 
-    const fetchClip = (chunk: string) => fetch("/api/speech", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: chunk, lang: answerLang }),
-    }).then(async (res) => {
+    const fetchClip = (chunk: string) => {
+      const clientKey = typeof window !== "undefined" ? localStorage.getItem("jervis_gemini_api_key") : null;
+      return fetch("/api/speech", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(clientKey ? { "x-gemini-api-key": clientKey.trim() } : {}),
+        },
+        body: JSON.stringify({
+          text: chunk,
+          lang: answerLang,
+          apiKey: clientKey?.trim() || undefined,
+        }),
+      }).then(async (res) => {
       if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error || "Voice unavailable");
       return URL.createObjectURL(await res.blob());
-    });
+      });
+    };
 
     setSpeaking(true);
     levelRef.current = 0.4;
