@@ -8,14 +8,24 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env["GEMINI_API_KEY"];
-        const body = (await request.json()) as { messages: UIMessage[]; mode?: JervisMode; lang?: "bn" | "en" };
+        const headerKey = request.headers.get("x-gemini-api-key");
+        const body = (await request.json().catch(() => ({}))) as {
+          messages?: UIMessage[];
+          mode?: JervisMode;
+          lang?: "bn" | "en";
+          apiKey?: string;
+        };
         const messages = await convertToModelMessages(body.messages ?? []);
         const mode = body.mode ?? "tutor";
         const lang = body.lang ?? "bn";
 
+        // Prioritize: Header API Key -> Request Body API Key -> Server Environment Variable
+        const clientKey = (headerKey && headerKey.trim()) || (body.apiKey && body.apiKey.trim());
+        const serverKey = process.env["GEMINI_API_KEY"]?.trim();
+        const activeKey = clientKey || serverKey;
+
         // When Gemini API key is not configured, seamlessly run in smart fallback mode without throwing 500 error
-        if (!apiKey || apiKey.trim() === "" || apiKey === "AIzaSy...") {
+        if (!activeKey || activeKey === "AIzaSy...") {
           return createFallbackChatResponse(messages, mode, lang);
         }
 
@@ -23,13 +33,13 @@ export const Route = createFileRoute("/api/chat")({
         const systemPrompt =
           systemFor(mode) +
           (lang === "bn"
-            ? "\n\nThe user has chosen Bengali. Always reply in natural Bengali (বাংলা script), keeping code and technical terms in English."
+            ? "\n\nThe user has chosen Bengali. Always reply in natural, deep, articulate Bengali (বাংলা script), keeping code and technical terms in English."
             : "");
 
         try {
           return createChatCall(
             request,
-            { apiKey, model },
+            { apiKey: activeKey, model },
             messages,
             systemPrompt,
           ).response();
