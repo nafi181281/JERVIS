@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Code2, GraduationCap, MessageSquare, Mic, NotebookTabs } from "lucide-react";
+import { ApiKeyDialog } from "@/components/jervis/ApiKeyDialog";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -35,6 +36,7 @@ export function Shell({ children, onMic, micActive, hideMobileHeader }: { childr
             <span className="hidden items-center gap-2 font-display text-[9px] tracking-[0.22em] text-muted-foreground sm:flex">
               <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_var(--primary)]" /> SYSTEM ONLINE
             </span>
+            <ApiKeyDialog />
             <nav className="hidden shrink-0 gap-1 text-xs md:flex lg:text-sm" aria-label="Main navigation">
               {NAV.map((n) => (
                 <Link key={n.to} to={n.to} activeOptions={{ exact: true }}
