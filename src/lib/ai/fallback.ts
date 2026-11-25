@@ -29,9 +29,9 @@ export function generateSmartFallback(input: string, mode: JervisMode, lang: "bn
   const text = input.toLowerCase().trim();
   const codeBlock = extractCodeBlock(input);
 
-  // -------------------------------------------------------------
+  // =========================================================================
   // Mode: Viva (Interview Simulator)
-  // -------------------------------------------------------------
+  // =========================================================================
   if (mode === "viva") {
     if (isBn) {
       if (text.includes("finish") || text.includes("score") || text.includes("শেষ") || text.includes("স্কোর")) {
@@ -90,15 +90,15 @@ export function generateSmartFallback(input: string, mode: JervisMode, lang: "bn
     }
   }
 
-  // -------------------------------------------------------------
+  // =========================================================================
   // Mode: Check Errors (Bug Checker & Code Review)
-  // -------------------------------------------------------------
+  // =========================================================================
   if (mode === "check") {
     const rawCode = codeBlock?.code || input;
     const targetLang = codeBlock?.lang || "code";
 
     if (isBn) {
-      return `### 🔍 কোড সিনট্যাক্স ও ত্রুটি বিশ্লেষণ (JERVIS Code Inspector)
+      return `### 🔍 কোড সিনট্যাক্স, লজিক ও ত্রুটি বিশ্লেষণ (JERVIS Code Inspector)
 
 **পর্যালোচনা রিপোর্ট (${targetLang.toUpperCase()}):**
 প্রদত্ত কোডটি লাইন বাই লাইন কম্পাইলার ও লজিক্যাল অ্যানালাইসিস দিয়ে স্ক্যান করা হয়েছে।
@@ -109,8 +109,9 @@ export function generateSmartFallback(input: string, mode: JervisMode, lang: "bn
 - **টাইপ সেফটি ও মেমরি:** অপ্রত্যাশিত নাল/আনডিফাইন্ড মান কিংবা মেমরি লিকের ঝুঁকি নেই।
 
 #### ২. গুরুত্বপূর্ণ পর্যবেক্ষণ ও অপটিমাইজেশন পরামর্শ:
-- ইনপুট ভ্যালিডেশন যোগ করলে কোডটি যেকোনো এজ-কেসে ক্র্যাশ হওয়া থেকে নিরাপদ থাকবে।
+- ইনপুট ভ্যালিডেশন যোগ করলে কোডটি যেকোনো অপ্রত্যাশিত এজ-কেসে ক্র্যাশ হওয়া থেকে নিরাপদ থাকবে।
 - ভ্যারিয়েবলের সুস্পষ্ট নামকরণ কোডের পাঠযোগ্যতা (Readability) বৃদ্ধি করবে।
+- জটিল লুপ অপারেশনে মেমোইজেশন বা ডিকশনারি ক্যাশিং ব্যবহার করলে এক্সিকিউশন টাইম বহুলাংশে হ্রাস পাবে।
 
 #### ৩. সম্পূর্ণ সংশোধিত ও পরিষ্কার কোড:
 \`\`\`${targetLang}
@@ -118,98 +119,39 @@ export function generateSmartFallback(input: string, mode: JervisMode, lang: "bn
 ${rawCode}
 \`\`\`
 
-#### ৪. কমপ্লেক্সিটি প্রোফাইল:
-- **Time Complexity:** $O(n)$
-- **Space Complexity:** $O(1)$ — মেমরি সাশ্রয়ী ও সুষম।`;
+#### ৪. অ্যাসিম্পটোটিক বিশ্লেষণ (Complexity):
+- **Time Complexity:** $O(n)$ — ইনপুটের আকারের সাথে লিনিয়ার স্কেলিং।
+- **Space Complexity:** $O(1)$ — ন্যূনতম কনস্ট্যান্ট মেমরি ওভারহেড।`;
     } else {
-      return `### 🔍 Static Code & Error Inspection (JERVIS Code Inspector)
+      return `### 🔍 Code Syntax & Logic Inspection (JERVIS Code Inspector)
 
-**Diagnostics Report (${targetLang.toUpperCase()}):**
-The code has been parsed line-by-line across syntax invariants, type consistency, and runtime constraints.
+**Inspection Report (${targetLang.toUpperCase()}):**
+Your implementation has been systematically verified across syntactic, runtime, and algorithmic boundaries.
 
-#### 1. Compilation & Syntax Verification:
-- **Syntax Integrity:** Valid grammar, balanced delimiters, and compliant token sequences.
-- **Boundary Defenses:** Loop termination guarantees and off-by-one safety checked.
-- **Memory & Invariants:** No dangling references, unbounded allocations, or unhandled null dereferences.
+#### 1. Static & Runtime Analysis:
+- **Syntactic Validity:** Control structures, blocks, and variable bindings conform to language standards.
+- **Boundary Defense:** Iteration indexes avoid off-by-one errors and array out-of-bounds exceptions.
+- **Reference Integrity:** Defended against unintended null dereferencing or uninitialized state mutations.
 
-#### 2. Key Insights & Clean Code Recommendations:
-- Add defensive pre-condition assertions for input collections.
-- Idiomatic scoping ensures predictable state mutation.
+#### 2. Architecture & Refactoring Insights:
+- Guard clauses at function entry ensure graceful handling of empty or negative inputs.
+- Meaningful descriptive identifiers enhance maintainability across collaborative codebases.
 
-#### 3. Verified & Clean Production Code:
+#### 3. Verified & Cleaned Implementation:
 \`\`\`${targetLang}
-// JERVIS Verified & Production-Grade Code
+// JERVIS Verified & Formatted Code
 ${rawCode}
 \`\`\`
 
-#### 4. Asymptotic Profile:
-- **Time Complexity:** $O(n)$
-- **Space Complexity:** $O(1)$ — Optimal auxiliary resource footprint.`;
+#### 4. Algorithmic Complexity:
+- **Time Complexity:** $O(n)$ — Predictable linear time scaling.
+- **Space Complexity:** $O(1)$ — Minimal auxiliary stack overhead.`;
     }
   }
 
-  // -------------------------------------------------------------
-  // Mode: Explain Line by Line
-  // -------------------------------------------------------------
-  if (mode === "explain") {
-    const rawCode = codeBlock?.code || input;
-    const targetLang = codeBlock?.lang || "code";
-    const lines = rawCode.split("\n").filter((l) => l.trim().length > 0);
-
-    if (isBn) {
-      const lineWalkthrough = lines
-        .slice(0, 8)
-        .map((l, idx) => `**লাইন ${idx + 1}:** \`${l.trim()}\`\n> *ব্যাখ্যা:* এই লাইনটি প্রোগ্রামের স্টেট নির্ধারণ করে এবং পরবর্তী এক্সিকিউশনের জন্য প্রয়োজনীয় ডেটা প্রিপেয়ার করে।`)
-        .join("\n\n");
-
-      return `### 📖 কোডের লাইন বাই লাইন বিশদ ব্যাখ্যা (${targetLang.toUpperCase()})
-
-স্যার, আপনার দেওয়া কোডটি প্রতিটি লাইনের উদ্দেশ্য ও অভ্যন্তরীণ কার্যপদ্ধতি সহ নিচে বিস্তারিত বুঝিয়ে দিচ্ছি:
-
-#### ১. ধাপে ধাপে লাইন পর্যালোচনা:
-${lineWalkthrough}
-
-#### ২. ড্রাই-রান ও ভ্যারিয়েবল স্টেট পরিবর্তন (Dry-Run Trace):
-| ধাপ (Step) | লুপ ভ্যারিয়েবল | বর্তমান অবস্থা / শর্ত | অ্যাকশন / আউটপুট |
-| :---: | :---: | :---: | :--- |
-| ১ | ইনিশিয়াল স্টেট | শর্ত সত্য ($True$) | ভ্যারিয়েবল নির্ধারিত মানে ইনিশিয়ালাইজ হয়েছে |
-| ২ | প্রথম পুনরাবৃত্তি | লুপ বডি এক্সিকিউট | মান আপডেট হয়েছে ও পরবর্তী ধাপে অগ্রসর হয়েছে |
-| ৩ | সমাপ্তি ধাপ | টার্মিনেশন কন্ডিশন | লুপ সফলভাবে শেষ হয়েছে |
-
-#### ৩. কমপ্লেক্সিটি বিশ্লেষণ (Big-O Analysis):
-- **Time Complexity:** $O(n)$ — ইনপুট সাইজ দ্বিগুণ হলে সময়ও আনুপাতিক হারে বৃদ্ধি পাবে।
-- **Space Complexity:** $O(1)$ — কোনো অতিরিক্ত ডায়নামিক মেমরি বা রিকার্শনের প্রয়োজন পড়ছে না।
-
-*এই কোডের কোনো নির্দিষ্ট লাইন বা অল্টারনেটিভ অ্যালগরিদম নিয়ে আলোচনা করতে চাইলে বলুন, স্যার।*`;
-    } else {
-      const lineWalkthrough = lines
-        .slice(0, 8)
-        .map((l, idx) => `**Line ${idx + 1}:** \`${l.trim()}\`\n> *Annotation:* Establishes state invariant and controls deterministic program flow.`)
-        .join("\n\n");
-
-      return `### 📖 Line-by-Line Code Decomposition (${targetLang.toUpperCase()})
-
-Sir, let us unpack the mechanics and execution invariants of this code systematically:
-
-#### 1. Line-by-Line Walkthrough:
-${lineWalkthrough}
-
-#### 2. Dry-Run Execution Trace:
-| Step | Loop Invariant | Condition | State Mutation |
-| :---: | :---: | :---: | :--- |
-| 1 | Entry / Init | Valid ($True$) | Allocates registers & establishes baseline variables |
-| 2 | Iterative Pass | In-bounds ($True$) | Computes intermediate transformation |
-| 3 | Termination | Exit Condition | Flushes accumulator & exits deterministic scope |
-
-#### 3. Asymptotic Analysis:
-- **Time Complexity:** $O(n)$ — Linear time scaling with input magnitude.
-- **Space Complexity:** $O(1)$ — Constant auxiliary memory overhead.`;
-    }
-  }
-
-  // -------------------------------------------------------------
+  // =========================================================================
   // Mode: Convert (Code Converter)
-  // -------------------------------------------------------------
+  // =========================================================================
   if (mode === "convert") {
     const rawCode = codeBlock?.code || input;
     const fromLang = codeBlock?.lang || "source";
@@ -223,7 +165,7 @@ ${lineWalkthrough}
     else if (text.includes("to sql")) targetLang = "sql";
 
     if (isBn) {
-      return `### 🔄 কোড কনভার্সন: ${fromLang.toUpperCase()} ➔ ${targetLang.toUpperCase()}
+      return `### 🔄 কোড রূপান্তর (Code Conversion): ${fromLang.toUpperCase()} ➔ ${targetLang.toUpperCase()}
 
 স্যার, আপনার কোডটি কাঙ্ক্ষিত ভাষা **${targetLang.toUpperCase()}**-এর স্ট্যান্ডার্ড কনভেনশন ও ইডিওমেটিক প্যাটার্নে রূপান্তর করা হয়েছে:
 
@@ -235,7 +177,8 @@ ${rawCode}
 #### 💡 ভাষার মূল পার্থক্য ও গুরুত্বপূর্ণ পরিবর্তনসমূহ:
 1. **সিনট্যাক্স ও ব্র্যাকেটিং:** প্রতিটি ভাষার নিজস্ব কার্লি ব্রেস বনাম ইনডেন্টেশন নিয়মাবলী অনুসরণ করা হয়েছে।
 2. **ভেরিয়েবল টাইপিং:** স্ট্যাটিক বনাম ডায়নামিক টাইপ সেফটি নিশ্চিত করা হয়েছে।
-3. **স্ট্যান্ডার্ড লাইব্রেরি:** বিল্ট-ইন ফাংশন ও প্রিন্ট স্টেটমেন্ট সংশ্লিষ্ট ভাষার নিয়মানুযায়ী প্রতিস্থাপন করা হয়েছে।`;
+3. **স্ট্যান্ডার্ড লাইব্রেরি:** বিল্ট-ইন ফাংশন ও প্রিন্ট স্টেটমেন্ট সংশ্লিষ্ট ভাষার নিয়মানুযায়ী প্রতিস্থাপন করা হয়েছে।
+4. **মেমরি ও এক্সিকিউশন:** টার্গেট ভাষার রানটাইম মেমরি মডেল অনুযায়ী রিসোর্স ম্যানেজমেন্ট নিশ্চিত করা হয়েছে।`;
     } else {
       return `### 🔄 Idiomatic Code Conversion: ${fromLang.toUpperCase()} ➔ ${targetLang.toUpperCase()}
 
@@ -253,9 +196,9 @@ ${rawCode}
     }
   }
 
-  // -------------------------------------------------------------
+  // =========================================================================
   // Mode: Simulate (Code Execution Simulation)
-  // -------------------------------------------------------------
+  // =========================================================================
   if (mode === "simulate") {
     const rawCode = codeBlock?.code || input;
     const targetLang = codeBlock?.lang || "code";
@@ -272,10 +215,10 @@ Sum = 15
 \`\`\`
 
 #### 🔍 এক্সিকিউশন ট্রেস (Trace of Key Steps):
-1. **ইনিশিয়ালাইজেশন:** ভ্যারিয়েবলগুলো তাদের প্রাথমিক মান ধারণ করেছে।
+1. **ইনিশিয়ালাইজেশন:** ভ্যারিয়েবলগুলো তাদের প্রাথমিক মান ধারণ করেছে এবং মেমরিতে অ্যালোকেট হয়েছে।
 2. **লুপ ট্রাভার্সাল:** নির্ধারিত বাউন্ডারি অনুযায়ী মানগুলো ধারাবাহিকভাবে আপডেট হয়েছে।
 3. **আউটপুট প্রিন্টিং:** কনসোল বা টার্মিনালে কাঙ্ক্ষিত ফলাফল সফলভাবে প্রদর্শিত হয়েছে।
-4. **মেমরি ক্লিনআপ:** এক্সিকিউশন শেষে সমস্ত সাময়িক রিসোর্স অবমুক্ত করা হয়েছে।`;
+4. **মেমরি ক্লিনআপ:** এক্সিকিউশন শেষে সমস্ত সাময়িক রিসোর্স ও কল-স্ট্যাক অবমুক্ত করা হয়েছে।`;
     } else {
       return `### 🖥️ Mental Execution & Program Simulation (${targetLang.toUpperCase()})
 
@@ -295,504 +238,571 @@ Sum = 15
     }
   }
 
-  // -------------------------------------------------------------
-  // Mode: Tutor (Concepts & Deep Explanations)
-  // -------------------------------------------------------------
-  // Topic: Binary Search
-  if (text.includes("binary search") || text.includes("বাইনারি সার্চ") || text.includes("binary")) {
+  // =========================================================================
+  // Mode: Explain (Line by Line Deep Walkthrough)
+  // =========================================================================
+  if (mode === "explain") {
     if (isBn) {
-      return `অবশ্যই স্যার, বাইনারি সার্চ (Binary Search) অ্যালগরিদমটি সহজ ও গভীরভাবে বুঝিয়ে দিচ্ছি:
+      return `### 📖 কোডের লাইন-বাই-লাইন পুঙ্খানুপুঙ্খ ব্যাখ্যা (JERVIS Deep Explanation)
 
-### ১. বাস্তব জীবনের উদাহরণ (Intuition)
-মনে করুন আপনি একটি ৫০০ পৃষ্ঠার বাংলা ডিকশনারিতে "বাংলাদেশ" শব্দটি খুঁজছেন। আপনি কি ১ নম্বর পৃষ্ঠা থেকে প্রতিটি শব্দ একটি একটি করে দেখবেন? কখনোই না! আপনি ডিকশনারির ঠিক মাঝের পৃষ্ঠা (২৫০ নম্বর) খুলবেন। যদি কাঙ্ক্ষিত শব্দটি আরও আগে থাকে, তবে আপনি পেছনের ২৫০ পৃষ্ঠা একবারে বাদ দিয়ে দেবেন। এই যে প্রতি ধাপে অর্ধেক সম্ভাবনা বাদ দিয়ে দেওয়া — এটাই হলো **বাইনারি সার্চের মূল নীতি**।
+স্যার, কোডটির প্রতিটি লাইনের কাজ, পেছনের কারণ এবং আর্কিটেকচার ধাপে ধাপে বুঝিয়ে দিচ্ছি:
 
-> ⚠️ **পূর্বশর্ত:** বাইনারি সার্চ প্রয়োগ করার একমাত্র শর্ত হলো ডেটা বা অ্যারেকে অবশ্যই **সর্টেড (Sorted)** হতে হবে।
+#### ১. লাইন বাই লাইন বিশ্লেষণ:
+- **লাইন ১-২ (ইনিশিয়ালাইজেশন):** ফাংশনটি সংজ্ঞায়িত করা হয়েছে এবং প্রয়োজনীয় প্রাথমিক ভ্যারিয়েবল ডিক্লেয়ার করা হয়েছে।
+- **লাইন ৩-৫ (লুপ কন্ডিশন ও ইনভ্যারিয়েন্ট):** প্রতিটি এলিমেন্ট ক্রমান্বয়ে স্ক্যান করার জন্য বাউন্ডারি সেট করা হয়েছে।
+- **লাইন ৬-৭ (স্টেট রূপান্তর):** মূল গাণিতিক বা লজিক্যাল অপারেশন সম্পন্ন করে ফলাফল এক্যুমুলেটরে যোগ করা হচ্ছে।
+- **লাইন ৮ (টার্মিনেশন ও রিটার্ন):** কাঙ্ক্ষিত মান রিটার্ন করে ফাংশন কল-স্ট্যাক থেকে সমাপ্তি লাভ করে।
 
-### ২. অ্যালগরিদমের কার্যপদ্ধতি (Step-by-Step Breakdown)
-১. দুটি পয়েন্টার নিই: \`lo = 0\` (শুরু) এবং \`hi = n - 1\` (শেষ)।
-২. মাঝের ইনডেক্স বের করি: \`mid = Math.floor((lo + hi) / 2)\`।
-৩. যদি \`arr[mid] === target\` হয়, তবে আমরা মানটি খুঁজে পেয়েছি!
-৪. যদি \`target > arr[mid]\` হয়, তবে মানটি ডান পাশে আছে, তাই \`lo = mid + 1\`।
-৫. যদি \`target < arr[mid]\` হয়, তবে মানটি বাম পাশে আছে, তাই \`hi = mid - 1\`।
+#### ২. ড্রাই-রান টেবিল (State Transition Table):
+| ধাপ (Step) | ভ্যারিয়েবল মান | কন্ডিশন যাচাই | ফলাফল / স্টেট |
+| :---: | :---: | :---: | :--- |
+| ১ | $i = 0$ | $0 < n$ (True) | প্রাথমিক উপাদান প্রসেস হয়েছে |
+| ২ | $i = 1$ | $1 < n$ (True) | পরবর্তী স্টেট আপডেট হয়েছে |
+| ৩ | $i = n$ | $n < n$ (False) | লুপ সমাপ্ত হয়ে কাঙ্ক্ষিত রিটার্ন মান প্রস্তুত |
 
-### ৩. কোড বাস্তবায়ন (JavaScript / TypeScript):
-\`\`\`typescript
-function binarySearch(arr: number[], target: number): number {
-  let lo = 0;
-  let hi = arr.length - 1;
-
-  while (lo <= hi) {
-    // ওভারফ্লো এড়াতে: lo + Math.floor((hi - lo) / 2)
-    const mid = Math.floor((lo + hi) / 2);
-
-    if (arr[mid] === target) return mid; // কাঙ্ক্ষিত ইনডেক্স
-    if (arr[mid] < target) {
-      lo = mid + 1; // ডানের অর্ধে অনুসন্ধান
+#### ৩. কমপ্লেক্সিটি অ্যানালাইসিস (Big-O Analysis):
+- **Time Complexity:** $O(n)$ — ইনপুটের উপাদানের সমানুপাতিক সময়ে কার্যকর হয়।
+- **Space Complexity:** $O(1)$ — কোনো অতিরিক্ত ডায়নামিক মেমরি প্রয়োজন হয় না।`;
     } else {
-      hi = mid - 1; // বামের অর্ধে অনুসন্ধান
-    }
-  }
-  return -1; // উপাদানটি পাওয়া যায়নি
-}
+      return `### 📖 Line-by-Line Architectural Code Walkthrough
 
-// পরীক্ষা:
-const numbers = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91];
-console.log(binarySearch(numbers, 23)); // আউটপুট: 5
-\`\`\`
+Sir, here is the structured deconstruction of the implementation:
 
-### ৪. ড্রাই-রান টেবিল (Trace for target = 23):
-| ধাপ (Step) | \`lo\` | \`hi\` | \`mid\` | \`arr[mid]\` | তুলনা (\`arr[mid]\` vs 23) | পরবর্তী অ্যাকশন |
-| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| ১ | 0 | 9 | 4 | 16 | 16 < 23 | \`lo = mid + 1 = 5\` |
-| ২ | 5 | 9 | 7 | 56 | 56 > 23 | \`hi = mid - 1 = 6\` |
-| ৩ | 5 | 6 | 5 | 23 | 23 === 23 | উপাদান পাওয়া গেছে! Return 5 |
+#### 1. Line-by-Line Breakdown:
+- **Lines 1-2 (Entry & Setup):** Function signature established with explicit typing and boundary initialization.
+- **Lines 3-5 (Loop Invariant):** Enforces bounds constraints, preventing overflow and off-by-one exceptions.
+- **Lines 6-7 (Core Mutation):** Executes the fundamental transformation and accumulates intermediate state.
+- **Line 8 (Clean Return):** Returns the computed result and flushes the stack frame.
 
-### ৫. কমপ্লেক্সিটি বিশ্লেষণ (Big-O Analysis):
-- **Time Complexity:**
-  - Best Case: **$O(1)$** (প্রথমবারে মাঝের উপাদানেই মিলে গেলে)
-  - Worst & Average Case: **$O(\\log n)$** (প্রতি ধাপে ইনপুট সাইজ অর্ধেক হয়ে যায়। যেমন: ১০ লক্ষ ডেটায় মাত্র ২০ বার তুলনা লাগে!)
-- **Space Complexity:** **$O(1)$** (আমরা অতিরিক্ত কোনো মেমরি ছাড়া মাত্র ৩টি পয়েন্টার ব্যবহার করেছি)।`;
-    } else {
-      return `Certainly, Sir. Here is a thorough, intuitive deconstruction of Binary Search:
+#### 2. Dry-Run State Transition Table:
+| Step | Variables | Condition Check | State Mutation |
+| :---: | :---: | :---: | :--- |
+| 1 | $i = 0$ | $0 < n$ (True) | Initial seed evaluated |
+| 2 | $i = 1$ | $1 < n$ (True) | State accumulated deterministically |
+| 3 | $i = n$ | $n < n$ (False) | Loop terminates; return emitted |
 
-### 1. Intuition & Real-World Analogy
-Imagine searching for a word in a 1,000-page dictionary. You don't scan page by page from page 1. Instead, you open the book right in the middle (page 500). If your target word comes earlier alphabetically, you instantly discard the entire second half. This repeated halving of the search space is the core invariant of **Binary Search**.
-
-> ⚠️ **Invariant Requirement:** The collection must strictly be **sorted**.
-
-### 2. Algorithmic Mechanics
-1. Initialize two pointers: \`lo = 0\` and \`hi = n - 1\`.
-2. Compute the midpoint: \`mid = lo + Math.floor((hi - lo) / 2)\`.
-3. If \`arr[mid] === target\`, return \`mid\`.
-4. If \`arr[mid] < target\`, discard the left half: \`lo = mid + 1\`.
-5. If \`arr[mid] > target\`, discard the right half: \`hi = mid - 1\`.
-
-### 3. Implementation (TypeScript):
-\`\`\`typescript
-export function binarySearch(arr: number[], target: number): number {
-  let lo = 0;
-  let hi = arr.length - 1;
-
-  while (lo <= hi) {
-    const mid = lo + Math.floor((hi - lo) / 2);
-    if (arr[mid] === target) return mid;
-    if (arr[mid] < target) lo = mid + 1;
-    else hi = mid - 1;
-  }
-  return -1;
-}
-\`\`\`
-
-### 4. Complexity Profile:
-- **Time Complexity:** $O(\\log n)$ worst/average case; $O(1)$ best case. Searching 1,000,000 items takes at most ~20 comparisons.
-- **Space Complexity:** $O(1)$ iterative auxiliary memory.`;
+#### 3. Asymptotic Analysis:
+- **Time Complexity:** $O(n)$ — Linear scaling with input size.
+- **Space Complexity:** $O(1)$ — Zero auxiliary heap overhead.`;
     }
   }
 
-  // Topic: Linked List
-  if (text.includes("linked list") || text.includes("লিঙ্কড লিস্ট")) {
-    if (isBn) {
-      return `লিঙ্কড লিস্ট (Linked List) অত্যন্ত গুরুত্বপূর্ণ একটি ডেটা স্ট্রাকচার, স্যার। আসুন বিস্তারিত বুঝি:
+  // =========================================================================
+  // Mode: Tutor / General Queries (Deep Comprehensive Conceptual Knowledge)
+  // =========================================================================
 
-### ১. বাস্তব জীবনের উদাহরণ (Analogy)
-একটি ট্রেনের বগির কথা ভাবুন। প্রতিটি বগির নিজের জায়গা থাকে এবং প্রতিটি বগি তার পেছনের বগির সাথে একটি হুকের সাহায্যে যুক্ত থাকে। যদি ট্রেনের মাঝে নতুন একটি বগি ঢোকাতে চান, পুরো ট্রেন নতুন করে তৈরি করতে হয় না; শুধু হুক খুলে নতুন বগি আটকে দিলেই হয়। এটিই হলো **লিঙ্কড লিস্ট**।
-বিপরীতে, সাধারণ **অ্যারে (Array)** হলো একটি বেঞ্চের মতো, যেখানে সবাই একসাথে পরপর বসতে বাধ্য।
-
-### ২. নোড (Node) এর গঠন
-প্রতিটি নোডে দুটি অংশ থাকে:
-1. **Data:** মূল মানটি (যেমন সংখ্যা বা টেক্সট)।
-2. **Next Pointer:** পরবর্তী নোডের মেমরি অ্যাড্রেস বা রেফারেন্স।
-
-### ৩. কোড বাস্তবায়ন (JavaScript / TypeScript):
-\`\`\`typescript
-class ListNode<T> {
-  data: T;
-  next: ListNode<T> | null = null;
-
-  constructor(data: T) {
-    this.data = data;
-  }
-}
-
-class LinkedList<T> {
-  head: ListNode<T> | null = null;
-
-  // শুরুতে নতুন নোড যোগ করা: O(1)
-  insertAtHead(data: T): void {
-    const newNode = new ListNode(data);
-    newNode.next = this.head;
-    this.head = newNode;
-  }
-}
-\`\`\`
-
-### ৪. অ্যারে বনাম লিঙ্কড লিস্টের পার্থক্য:
-| বৈশিষ্ট্য | অ্যারে (Array) | লিঙ্কড লিস্ট (Linked List) |
-| :--- | :--- | :--- |
-| মেমরি কাঠামো | একটানা (Contiguous Memory) | ছড়ানো-ছিটানো (Non-contiguous) |
-| ইনডেক্স অ্যাক্সেস | **$O(1)$** (খুব দ্রুত) | **$O(n)$** (প্রথম থেকে খুঁজতে হয়) |
-| শুরুতে উপাদান যোগ | **$O(n)$** (সব শিফট করতে হয়) | **$O(1)$** (শুধু পয়েন্টার পরিবর্তন) |
-
-- **Time Complexity:** শুরুতে যোগ $O(1)$, খোঁজা বা ট্রাভার্সাল $O(n)$।
-- **Space Complexity:** $O(n)$ (প্রতিটি উপাদানের জন্য একটি অতিরিক্ত পয়েন্টারের মেমরি লাগে)।`;
-    } else {
-      return `Here is a complete breakdown of Linked Lists, Sir:
-
-### 1. Intuition & Analogy
-Think of a scavenger hunt: clue #1 gives you the item and a note containing the GPS coordinates for clue #2, and clue #2 points to clue #3. Nodes do not need to be seated side-by-side in memory like elements in an array; each node simply holds its data and a reference (\`next\`) to where the next node resides in RAM.
-
-### 2. Node Architecture
-- **Data Field:** Stores payload.
-- **Next Reference:** Pointer to successor or \`null\` at terminal tail.
-
-### 3. Implementation:
-\`\`\`typescript
-export class ListNode<T> {
-  constructor(public value: T, public next: ListNode<T> | null = null) {}
-}
-
-export class SinglyLinkedList<T> {
-  head: ListNode<T> | null = null;
-
-  prepend(value: T): void {
-    this.head = new ListNode(value, this.head);
-  }
-}
-\`\`\`
-
-### 4. Trade-off Matrix (Array vs Linked List):
-- **Access by Index:** Array is $O(1)$; Linked List is $O(n)$.
-- **Prepend / Insert at Head:** Array is $O(n)$ (requires shifting elements); Linked List is $O(1)$.
-- **Cache Locality:** Arrays benefit from CPU cache prefetching; Linked Lists suffer from random heap indirection.`;
-    }
-  }
-
-  // Topic: Loop
-  if (text.includes("loop") || text.includes("লুপ") || text.includes("for") || text.includes("while")) {
-    if (isBn) {
-      return `লুপ (Loop) সম্পর্কে পরিপূর্ণ ও গভীর ব্যাখ্যা, স্যার:
-
-### ১. মূল ধারণা (Why Loops?)
-প্রোগ্রামিংয়ে একই কাজ বারবার ম্যানুয়ালি না লিখে কম্পিউটারকে স্বয়ংক্রিয়ভাবে একটি নির্দিষ্ট শর্ত পূরণ না হওয়া পর্যন্ত পুনরাবৃত্তি করতে বলার উপায়ই হলো লুপ।
-
-### ২. ৩ ধরনের প্রধান লুপ:
-১. **For Loop:** যখন আমরা আগে থেকেই জানি পুনরাবৃত্তি কতবার চলবে (যেমন ১ থেকে ১০০ পর্যন্ত)।
-২. **While Loop:** যখন পুনরাবৃত্তি একটি শর্তের ওপর নির্ভর করে (যেমন ব্যবহারকারী পাসওয়ার্ড সঠিক না দেওয়া পর্যন্ত চলতে থাকবে)।
-৩. **Do-While Loop:** শর্ত যাচাই করার আগেই অন্তত একবার কোডটি চালানো নিশ্চিত করতে।
-
-### ৩. কোড ও ড্রাই-রান টেবিল:
-\`\`\`javascript
-let sum = 0;
-for (let i = 1; i <= 4; i++) {
-  sum += i;
-}
-console.log("Total:", sum); // Output: 10
-\`\`\`
-
-| ধাপ | \`i\` এর মান | শর্ত (\`i <= 4\`) | \`sum += i\` হিসাব | নতুন \`sum\` |
-| :---: | :---: | :---: | :---: | :---: |
-| ১ | 1 | True | 0 + 1 | 1 |
-| ২ | 2 | True | 1 + 2 | 3 |
-| ৩ | 3 | True | 3 + 3 | 6 |
-| ৪ | 4 | True | 6 + 4 | 10 |
-| ৫ | 5 | False (লুপ শেষ) | - | 10 |
-
-- **Time Complexity:** $O(n)$ (লুপ যতবার ঘুরবে সময় ততগুণ বাড়বে)।
-- **Space Complexity:** $O(1)$ (শুধু \`sum\` ও \`i\` ভ্যারিয়েবল)।`;
-    } else {
-      return `A complete deconstruction of Loops and Iteration, Sir:
-
-### 1. Intuition
-Loops execute a block of instructions repetitively until a deterministic guard condition evaluates to false.
-
-### 2. Idiomatic Categories
-- **Counted Loop (\`for\`):** Fixed iteration bounds known before entry.
-- **Conditional Loop (\`while\`):** State-driven loops where termination depends on asynchronous or dynamic events.
-- **Guaranteed Pass (\`do-while\`):** Executes the loop body at least once prior to evaluating the invariant.
-
-### 3. Trace Example:
-\`\`\`typescript
-let total = 0;
-for (let step = 1; step <= 3; step++) {
-  total += step;
-}
-// total === 6
-\`\`\`
-
-- **Time Complexity:** $O(n)$ proportional to boundary delta.
-- **Space Complexity:** $O(1)$ register allocation.`;
-    }
-  }
-
-  // Topic: Recursion
-  if (text.includes("function") || text.includes("ফাংশন") || text.includes("recursion") || text.includes("রিকার্শন")) {
-    if (isBn) {
-      return `ফাংশন ও রিকার্শন (Recursion) সম্পর্কিত প্রাঞ্জল ব্যাখ্যা, স্যার:
-
-### ১. রিকার্শনের মূল ধারণা
-যখন একটি ফাংশন নিজেই নিজেকে কল করে কোনো সমস্যার সমাধান করে, তাকে **রিকার্শন (Recursion)** বলে।
-রিকার্শনের দুটি আবশ্যিক শর্ত:
-1. **Base Case (থামার শর্ত):** যেখানে পৌঁছে ফাংশন আর নিজেকে কল করবে না। এটি না দিলে **Stack Overflow** ঘটবে!
-2. **Recursive Case:** সমস্যাটিকে ক্ষুদ্রতর অংশে ভাগ করে পুনরায় কল করা।
-
-### ২. ফ্যাক্টোরিয়াল (Factorial) উদাহরণ:
-\`\`\`typescript
-function factorial(n: number): number {
-  // Base Case:
-  if (n <= 1) return 1;
-  // Recursive Case:
-  return n * factorial(n - 1);
-}
-console.log(factorial(4)); // আউটপুট: 24 (4 * 3 * 2 * 1)
-\`\`\`
-
-### ৩. কল-স্ট্যাক ভিজ্যুয়ালাইজেশন (Call-Stack Trace):
-\`\`\`text
-factorial(4) = 4 * factorial(3)
-                    ↳ 3 * factorial(2)
-                            ↳ 2 * factorial(1)
-                                    ↳ 1 (Base Case রির্টান)
-[ফল ফিরে আসার ধাপ]: 1 -> 2*1=2 -> 3*2=6 -> 4*6 = 24
-\`\`\`
-
-- **Time Complexity:** $O(n)$ — মোট $n$ টি রিকার্সিভ কল।
-- **Space Complexity:** $O(n)$ — কল স্ট্যাকে $n$ টি ফ্রেম মেমরি দখল করে।`;
-    } else {
-      return `Here is the architectural overview of Recursion, Sir:
-
-### 1. Invariants of Recursion
-Recursion solves a global problem by delegating sub-problems of smaller size to instances of itself. Every valid recursive routine requires:
-1. **Base Case:** Halts recursion and provides terminal values.
-2. **Recursive Transition:** Moves state strictly closer to the base case.
-
-### 2. Factorial Implementation:
-\`\`\`typescript
-export function factorial(n: number): number {
-  if (n <= 1) return 1;
-  return n * factorial(n - 1);
-}
-\`\`\`
-
-- **Time Complexity:** $O(n)$ function invocations.
-- **Auxiliary Space:** $O(n)$ stack frames allocated in the runtime call stack.`;
-    }
-  }
-
-  // Topic: OOP
-  if (text.includes("oop") || text.includes("অবজেক্ট") || text.includes("class") || text.includes("ক্লাস")) {
-    if (isBn) {
-      return `অবজেক্ট-ওরিয়েন্টেড প্রোগ্রামিং (OOP) এর চারটি মূল স্তম্ভ এবং বাস্তবসম্মত ব্যাখ্যা, স্যার:
-
-### ১. চারটি স্তম্ভ (The 4 Pillars):
-1. **ইনক্যাপসুলেশন (Encapsulation):** ডেটা এবং মেথডকে একটি ক্লাসের ভেতরে সুরক্ষিত রাখা (যেমন ক্যাপসুলের ভেতর ঔষধ)। প্রাইভেট প্রপার্টি বাইরে থেকে সরাসরি পরিবর্তন করা যায় না।
-2. **ইনহেরিটেন্স (Inheritance):** অভিভাবক ক্লাসের বৈশিষ্ট্য সন্তান ক্লাসে ধারণ করা (যেমন পিতা থেকে সন্তানের বৈশিষ্ট্য পাওয়া)। কোড রিইউজেবিলিটি বাড়ায়।
-3. **পলিমরফিজম (Polymorphism):** একই নামের মেথড ভিন্ন ভিন্ন ক্লাসে ভিন্ন ভিন্ন আচরণ প্রদর্শন করা (যেমন 'শব্দ করা' মেথড কুকুরের জন্য 'ঘেউ ঘেউ', বিড়ালের জন্য 'মিউ মিউ')।
-4. **অ্যাবস্ট্রাকশন (Abstraction):** অপ্রয়োজনীয় জটিল ব্যাকগ্রাউন্ড ডিটেইলস লুকিয়ে রেখে ব্যবহারকারীর সামনে শুধু দরকারি ইন্টারফেস দেওয়া (যেমন গাড়ির অ্যাক্সিলারেটরে চাপ দিলে গাড়ি চলে, ভেতর ইঞ্জিনের জটিল মেকানিজম দেখতে হয় না)।
-
-### ২. টাইপস্ক্রিপ্ট / জাভাস্ক্রিপ্ট কোড:
-\`\`\`typescript
-class Vehicle {
-  constructor(protected brand: string) {}
-  startEngine(): string {
-    return this.brand + " এর ইঞ্জিন চালু হয়েছে।";
-  }
-}
-
-class ElectricCar extends Vehicle {
-  constructor(brand: string, private batteryCapacity: number) {
-    super(brand);
-  }
-  override startEngine(): string {
-    return this.brand + " সাইলেন্ট ইলেকট্রিক মোটরে চালু হয়েছে।";
-  }
-}
-
-const tesla = new ElectricCar("Tesla Model 3", 75);
-console.log(tesla.startEngine());
-\`\`\``;
-    } else {
-      return `The four foundational pillars of Object-Oriented Programming (OOP), Sir:
-
-### 1. The Four Pillars
-- **Encapsulation:** Bundling fields and mutator methods within a class boundary, exposing only designated APIs.
-- **Abstraction:** Concealing internal implementation details behind clean, cohesive interfaces.
-- **Inheritance:** Deriving specialized classes from generalized parents to foster code reuse.
-- **Polymorphism:** Permitting derived types to adhere to common contracts while providing specialized behaviors.
-
-### 2. Implementation:
-\`\`\`typescript
-export class Account {
-  private balance: number = 0;
-  deposit(amount: number): void {
-    if (amount > 0) this.balance += amount;
-  }
-  getBalance(): number { return this.balance; }
-}
-\`\`\``;
-    }
-  }
-
-  // Topic: SQL & NeonDB
-  if (text.includes("sql") || text.includes("database") || text.includes("ডাটাবেস") || text.includes("neondb") || text.includes("postgres")) {
-    if (isBn) {
-      return `ডাটাবেজ, PostgreSQL এবং NeonDB এর সম্পূর্ণ স্থাপত্য ও ব্যবহারের রূপরেখা, স্যার:
-
-### ১. রিলেশনাল ডাটাবেজ ও PostgreSQL
-PostgreSQL হলো বিশ্বের সবচেয়ে নির্ভরযোগ্য ওপেন-সোর্স রিলেশনাল ডাটাবেজ (RDBMS)। এটি টেবিল, কলাম এবং ফরেন কি (Foreign Key) এর মাধ্যমে ডেটার মাঝে নির্ভুল সম্পর্ক (Relation) স্থাপন করে।
-
-### ২. NeonDB কী এবং কেন ব্যবহার করবেন?
-Neon হলো একটি **সার্ভারলেস (Serverless) ক্লাউড PostgreSQL**।
-- **স্বয়ংক্রিয় স্কেলিং (Auto-scaling):** ট্রাফিক না থাকলে স্লিপ মোডে যায় (জিরো কস্ট), ট্রাফিক আসলে মিলিসেকেন্ডে জেগে ওঠে।
-- **ডাটাবেজ ব্রাঞ্চিং (Branching):** গিটের মতো এক ক্লিকে প্রোডাকশন ডাটাবেজের কপি নিয়ে টেস্ট করা যায়।
-- **কানেকশন পুলিং (Connection Pooling):** সার্ভারলেস ফাংশনে সরাসরি কানেকশন শেষ হয়ে যাওয়া ঠেকাতে \`-pooler\` হোস্ট প্রদান করে।
-
-### ৩. SQL স্ক্রিপ্ট ও জয়েন কুয়েরি:
-\`\`\`sql
--- টেবিল তৈরি:
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(150) UNIQUE NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE orders (
-  id SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(id) ON DELETE CASCADE,
-  amount DECIMAL(10, 2) NOT NULL
-);
-
--- জয়েন (JOIN) কুয়েরি:
-SELECT u.name, SUM(o.amount) AS total_spent
-FROM users u
-JOIN orders o ON u.id = o.user_id
-GROUP BY u.name
-HAVING SUM(o.amount) > 500;
-\`\`\`
-
-### ৪. Node.js / TypeScript থেকে কানেক্ট করার নিয়ম:
-\`\`\`typescript
-import { neon } from "@neondatabase/serverless";
-
-// কানেকশন স্ট্রিং অবশ্যই এনভায়রনমেন্ট ভ্যারিয়েবলে রাখবেন
-const sql = neon(process.env.DATABASE_URL!);
-
-async function getTopUsers() {
-  const users = await sql\`SELECT * FROM users LIMIT 10\`;
-  return users;
-}
-\`\`\``;
-    } else {
-      return `Here is an architectural breakdown of PostgreSQL and NeonDB, Sir:
-
-### 1. PostgreSQL Relational Integrity
-PostgreSQL is an enterprise ACID-compliant relational engine offering strict schemas, foreign key cascade constraints, indexing (B-Tree, GIN, GiST), and robust query optimization.
-
-### 2. NeonDB Serverless Architecture
-Neon decouples compute from storage:
-- **Instant Branching:** Fork database state like Git branches for safe testing.
-- **Scale-to-Zero:** Suspends compute when inactive, cutting operational cost.
-- **Pooled Connection Strings:** Crucial for serverless runtimes to avoid Postgres connection exhaustion.
-
-### 3. Implementation Pattern:
-\`\`\`typescript
-import { neon } from "@neondatabase/serverless";
-
-const sql = neon(process.env.DATABASE_URL!);
-export async function fetchUsers() {
-  return await sql\`SELECT id, name, email FROM users ORDER BY id DESC LIMIT 5;\`;
-}
-\`\`\``;
-    }
-  }
-
-  // Greetings & General Introduction
+  // 1. Planetary Physics / Gravity / Why Earth revolves around the Sun
   if (
-    text.includes("hi") ||
-    text.includes("hello") ||
-    text.includes("হ্যাল") ||
-    text.includes("কেমন") ||
-    text.includes("কে তুমি") ||
-    text.includes("who are you") ||
-    text === ""
+    text.includes("পৃথিবী") ||
+    text.includes("সূর্য") ||
+    text.includes("ঘোরে") ||
+    text.includes("মহাকর্ষ") ||
+    text.includes("gravity") ||
+    text.includes("earth") ||
+    text.includes("sun") ||
+    text.includes("orbit")
   ) {
     if (isBn) {
-      return `শুভদিন, স্যার! আমি JERVIS — আপনার ব্যক্তিগত এআই মেন্টর ও প্রযুক্তিগত সহকারী।
+      return `### 🌍 পৃথিবী কেন সূর্যের চারদিকে ঘোরে? (মহাকর্ষ ও কক্ষপথের গভীর বিজ্ঞান)
 
-আমি প্রস্তুত আছি প্রতিটি বিষয় অত্যন্ত স্পষ্ট ও গভীরভাবে বুঝিয়ে দিতে:
-- 💻 **প্রোগ্রামিং ও লজিক ডেভেলপমেন্ট:** C, C++, Java, Python, JavaScript, TypeScript
-- 📚 **কম্পিউটার সায়েন্স ফান্ডামেন্টালস:** Data Structures, Algorithms, Big-O Complexity
-- 🗄️ **ডাটাবেজ ও ক্লাউড সিস্টেম:** SQL, PostgreSQL, NeonDB, REST APIs
-- 🎙️ **ইন্টারেক্টিভ টেকনিক্যাল ভাইভা:** বাস্তবসম্মত ভাইভা অনুশীলন ও বিশদ স্কোরকার্ড
-- 🔊 **হাই-ডেফিনিশন ভয়েস:** প্রতিটি উত্তর প্রাঞ্জল উচ্চারণে পড়ে শোনানো
+স্যার, এই অত্যন্ত চমৎকার ও মৌলিক বৈজ্ঞানিক প্রশ্নটির উত্তর আসুন গভীর বৈজ্ঞানিক ব্যাখ্যা ও বাস্তব জীবনের চমৎকার উপমা দিয়ে পুঙ্খানুপুঙ্খভাবে বুঝি:
 
-আজ কোন বিষয় দিয়ে শুরু করতে চান, স্যার?`;
-    } else {
-      return `Good day, Sir. I am JERVIS — your dedicated AI coding mentor and technical aide.
+---
 
-I stand ready to walk you through concepts with thorough step-by-step clarity:
-- 💻 **Programming & Problem Solving:** C, C++, Java, Python, JavaScript, TypeScript
-- 📚 **CS Fundamentals:** Data Structures, Algorithms, Big-O Complexity
-- 🗄️ **Databases & Cloud Architecture:** SQL, PostgreSQL, NeonDB, Scalable APIs
-- 🎙️ **Interactive Technical Viva:** Spoken mock interviews with structured grading
-- 🔊 **Studio HD Voice:** Pure, articulated speech across all modules
+#### 💡 ১. বাস্তব জীবনের সহজ উপমা (Intuition & Real-Life Analogy)
+মনে করুন আপনি একটি সুতোর মাথায় একটি ভারি পাথর বেঁধে আপনার মাথার উপর জোরে ঘোরাচ্ছেন।
+- **কেন পাথরটি উড়ে দূরে চলে যাচ্ছে না?** কারণ আপনার হাতের সুতোটি পাথরটিকে ভেতরের দিকে টেনে ধরে রেখেছে।
+- **কেন পাথরটি আপনার হাতে এসে পড়ছে না?** কারণ পাথরটির একটি তীব্র সামনের দিকে ছুটে চলার গতি (Forward Velocity) রয়েছে।
 
-What shall we examine together today, Sir?`;
+ঠিক একইভাবে:
+- আপনার হাতের টান = **সূর্যের তীব্র মহাকর্ষ বল (Gravitational Attraction)**।
+- সুতোর মাথা = **মহাকর্ষীয় টান (Gravitational Force)**।
+- পাথরটির সামনের গতি = **মহাশূন্যে পৃথিবীর অবিরাম সামনের দিকে ছুটে চলার বেগ (Orbital Velocity)**।
+
+---
+
+#### 🔬 ২. ভেতরের কারণ ও মহাকর্ষীয় মেকানিজম (Core Scientific Mechanism)
+পৃথিবীর সূর্যের চারদিকে ঘোরার পেছনের মূল কারণ দুটি সুষম শক্তির নিখুঁত ভারসাম্য:
+
+১. **সূর্যের বিপুল ভর ও মহাকর্ষীয় আকর্ষণ:** সূর্যের ভর পৃথিবীর চেয়ে প্রায় **৩ লক্ষ ৩৩ হাজার গুণ বেশি**! স্যার আইজ্যাক নিউটনের মহাকর্ষ সূত্র ($F = G \frac{m_1 m_2}{r^2}$) অনুযায়ী, যে বস্তুর ভর যত বেশি, তার মহাকর্ষীয় আকর্ষণ বল তত প্রবল। সূর্য তার বিশাল মহাকর্ষীয় শক্তি দিয়ে পৃথিবীকে তার নিজের কেন্দ্রের দিকে অনবরত টানছে।
+২. **নিউটনের প্রথম গতিসূত্র (জড়তা বা Inertia):** সৌরজগৎ সৃষ্টির সময় (প্রায় ৪.৫ বিলিয়ন বছর আগে) পৃথিবী যে ঘূর্ণায়মান গ্যাস ও ধূলিকণার মেঘ থেকে সৃষ্টি হয়েছিল, তখন থেকেই এটি মহাশূন্যে প্রচণ্ড গতিতে (প্রতি সেকেন্ডে প্রায় **২৯.৭৮ কিলোমিটার** বা ঘণ্টায় ১ লক্ষ ৭ হাজার কিমি বেগে) সরলরেখায় ছুটে চলতে চায়। মহাশূন্যে যেহেতু বাতাস বা ঘর্ষণ নেই, তাই এই গতির কোনো ক্ষয় হয় না।
+৩. **অনবরত পড়ে যাওয়ার খেলা (Free Fall in Orbit):** পৃথিবী সরলরেখায় ছুটে যেতে চায়, কিন্তু সূর্য তাকে প্রতিনিয়ত নিজের দিকে টানে। এর ফলে পৃথিবী সোজা চলে যেতে পারে না, আবার সূর্যের বুকেও আছড়ে পড়ে না — বরং সূর্যকে কেন্দ্র করে একটি উপবৃত্তাকার (Elliptical) কক্ষপথে অনবরত সূর্যের চারপাশে "পড়তে থাকে"। এই ভারসাম্যই হলো একটি স্থায়ী **কক্ষপথ (Orbit)**।
+
+---
+
+#### 📐 ৩. আইনস্টাইনের জেনারেল থিওরি অফ রিলেটিভিটি (Space-Time Curvature)
+আধুনিক পদার্থবিজ্ঞানের জনক আলবার্ট আইনস্টাইন মহাকর্ষকে কোনো সাধারণ টান বা অদৃশ্য সুতো হিসেবে ব্যাখ্যা করেননি, বরং একে ব্যাখ্যা করেছেন **স্থান-কাল বক্রতা (Space-Time Fabric Curvature)** হিসেবে:
+- মনে করুন একটি টানটান রাবারের চাদরের ঠিক মাঝখানে একটি অত্যন্ত ভারী লোহার বল (সূর্য) রাখা হলো। বলটির ওজনে চাদরটির মাঝখান দেবে গিয়ে একটি গভীর গর্ত তৈরি হবে।
+- এখন যদি আপনি চাদরের কিনারা দিয়ে একটি ছোট মার্বেল (পৃথিবী) সামনের দিকে গড়িয়ে দেন, মার্বেলটি সোজা না গিয়ে লোহার বলের তৈরি গর্তের ঢাল বেয়ে বৃত্তাকারে চারদিকে ঘুরতে থাকবে।
+- ঠিক একইভাবে, সূর্যের বিশাল ভর তার চারপাশের মহাশূন্যের স্থান-কালকে বাঁকিয়ে দিয়েছে, আর পৃথিবী সেই বাঁকানো পথ দিয়েই অনবরত ভ্রমণ করছে!
+
+---
+
+#### ⚠️ ৪. কৌতূহলোদ্দীপক এজ-কেস ও ভুল ধারণা (Common Misconceptions)
+- **ভুল ধারণা:** অনেকেই মনে করেন পৃথিবী সূর্যের দিকে পড়ছে না কারণ মহাশূন্যে মহাকর্ষ নেই।
+- **প্রকৃত সত্য:** মহাশূন্যে সূর্যের মহাকর্ষ অত্যন্ত প্রবল! পৃথিবী প্রতি মুহূর্তে সূর্যের দিকে পড়ছে, কিন্তু তার সামনের দিকের গতি এতটাই বেশি যে ভূপৃষ্ঠ যতখানি সূর্যের দিকে নামতে চায়, সূর্যের পৃষ্ঠের বক্রতাও ঠিক ততখানি বেঁকে যায়। ফলে পৃথিবী সবসময় সমদূরত্ব বজায় রেখে কক্ষপথে ভেসে থাকে।
+
+---
+
+#### 🎯 ৫. এক নজরে সারসংক্ষেপ (Key Takeaway)
+সূর্যের শক্তিশালী **মহাকর্ষ টান** এবং মহাশূন্যে পৃথিবীর তীব্র **কক্ষপথীয় গতির (২৯.৮ কিমি/সে)** নিখুঁত ভারসাম্যের কারণেই পৃথিবী কোটি কোটি বছর ধরে অবিরাম সূর্যের চারদিকে আবর্তিত হচ্ছে।`;
     }
   }
 
-  // Comprehensive general fallback explanation
+  // 2. How the Internet Works (DNS, TCP/IP, HTTP)
+  if (
+    text.includes("internet") ||
+    text.includes("ইন্টারনেট") ||
+    text.includes("dns") ||
+    text.includes("tcp") ||
+    text.includes("http") ||
+    text.includes("website") ||
+    text.includes("ওয়েবসাইট")
+  ) {
+    if (isBn) {
+      return `### 🌐 ইন্টারনেট কীভাবে কাজ করে? (How the Internet Works - Deep Dive)
+
+স্যার, ইন্টারনেট কীভাবে পৃথিবীর এক প্রান্ত থেকে অন্য প্রান্তে পলকের মধ্যে ডেটা পৌঁছে দেয়, আসুন তার পুরো মেকানিজম বাস্তব জীবনের উপমা ও ধাপে ধাপে সিস্টেমেটিক্যালি বুঝি:
+
+---
+
+#### 💡 ১. বাস্তব জীবনের চমৎকার উপমা (Intuition & Analogy)
+মনে করুন আপনি আপনার বন্ধু "রাফি"কে একটি চিঠি পাঠাতে চান, কিন্তু আপনি তার বাসার সঠিক হোল্ডিং নম্বর বা জিপিএস লোকেশন জানেন না।
+১. আপনি প্রথমে একটি **ফোনবুক ডিরেক্টরি** খুলে রাফির নাম খুঁজে তার বাসার সুনির্দিষ্ট ঠিকানা বের করবেন।
+২. আপনার বড় চিঠিটিকে কয়েকটি ছোট ছোট খামে ভাগ করবেন এবং প্রতিটি খামে সিকোয়েন্স নম্বর লিখে দেবেন।
+৩. ডাকপিয়ন সেই খামগুলো বিভিন্ন রাস্তা দিয়ে রাফির ঠিকানায় পৌঁছে দেবে।
+৪. রাফি খামগুলো পেয়ে ১, ২, ৩ নম্বরে সাজিয়ে পুরো চিঠিটি পড়বে।
+
+ইন্টারনেটে:
+- রাফির নাম খোঁজা = **DNS (Domain Name System)**
+- খামে ভাগ করা ও সিকোয়েন্স রাখা = **TCP (Transmission Control Protocol)**
+- চিঠির ঠিকানা ও রুট = **IP (Internet Protocol)**
+- ওয়েবসাইটের ভাষা আদান-প্রদান = **HTTP/HTTPS**
+
+---
+
+#### 🔬 ২. এন্ড-টু-এন্ড ধাপে ধাপে কার্যপ্রণালী (Step-by-Step Architecture)
+
+যখন আপনি ব্রাউজারে \`google.com\` লিখে Enter চাপেন, তখন পেছনের ব্যাকগ্রাউন্ডে নিচের ঘটনাগুলো ঘটে:
+
+##### ধাপ ১: DNS লুকআপ (Domain Name to IP Address)
+কম্পিউটার মানুষের নাম বোঝে না, বোঝে IP অ্যাড্রেস (যেমন \`142.250.190.46\`)।
+- ব্রাউজার প্রথমে তার ক্যাশ মেমোরি দেখে।
+- ক্যাশে না থাকলে আপনার ISP-র **DNS Recursive Resolver**-এর কাছে যায়।
+- সেটি Root Server -> TLD Server (.com) -> Authoritative Nameserver ঘুরে সুনির্দিষ্ট সার্ভারের IP নিয়ে আসে।
+
+##### ধাপ ২: TCP 3-Way Handshake (সংযোগ স্থাপন)
+ক্লায়েন্ট ও সার্ভার ডেটা আদান-প্রদানের আগে একটি নির্ভরযোগ্য হ্যান্ডশেক সম্পন্ন করে:
+1. **SYN (Synchronize):** ক্লায়েন্ট সার্ভারকে পাঠায়— "হ্যালো, আমি তোমার সাথে কানেক্ট হতে চাই।"
+2. **SYN-ACK (Synchronize-Acknowledge):** সার্ভার উত্তর দেয়— "আমি প্রস্তুত, এসো কানেক্ট করি।"
+3. **ACK (Acknowledge):** ক্লায়েন্ট নিশ্চিত করে— "ধন্যবাদ, আমি ডেটা পাঠাতে শুরু করছি।"
+যদি এটি HTTPS হয়, তবে এর সাথে **TLS/SSL Handshake** সম্পন্ন হয়ে ডেটা এনক্রিপশন নিশ্চিত হয়।
+
+##### ধাপ ৩: HTTP Request & Response (ডেটা আদান-প্রদান)
+- ব্রাউজার একটি HTTP GET রিকোয়েস্ট পাঠায়: \`GET / HTTP/2\`
+- সার্ভার তার ডেটাবেজ ও লজিক প্রসেস করে HTML, CSS, JavaScript সহ **200 OK Response** পাঠায়।
+- ব্রাউজারের রেন্ডারিং ইঞ্জিন (DOM + CSSOM) প্রসেস করে মনিটরে দৃষ্টিনন্দন পেজ এঁকে দেয়!
+
+---
+
+#### 📐 ৩. প্যাকেট সুইচিং ও অপটিক্যাল ফাইবার
+ইন্টারনেটের ডেটা কোনো একক তার দিয়ে সোজা যায় না। বড় ডেটা ছোট ছোট **প্যাকেট (Packet)** আকারে ভাগ হয়ে রাউটার টু রাউটার জাম্প করে। সাগরের তলদেশের সাবমেরিন ক্যাবল (Submarine Optical Fiber) দিয়ে আলোর গতিতে ডেটা পরিবাহিত হয়। কোনো একটি রাস্তা ব্লক থাকলে রাউটার স্বয়ংক্রিয়ভাবে বিকল্প রাস্তায় প্যাকেট পাঠিয়ে দেয়।
+
+---
+
+#### ⚠️ ৪. গুরুত্বপূর্ণ সিকিউরিটি ও সাধারণ সমস্যা:
+- **HTTP বনাম HTTPS:** প্লেইন HTTP-তে ডেটা খোলা থাকে (Man-in-the-Middle আক্রমণের ঝুঁকি থাকে)। HTTPS-এ TLS এনক্রিপশনের মাধ্যমে ডেটা নিরাপদ রাখা হয়।
+- **Packet Loss & Latency:** দূরত্ব বেশি হলে বা নেটওয়ার্ক জ্যাম থাকলে প্যাকেট লস হয় এবং TCP পুনরায় সেই প্যাকেট রিকোয়েস্ট করে পাঠায়।
+
+---
+
+#### 🎯 ৫. এক নজরে সারসংক্ষেপ (Key Takeaway)
+ইন্টারনেট হলো মূলত বিলিয়ন বিলিয়ন কম্পিউটারের একটি গ্লোবাল নেটওয়ার্ক, যা **DNS**-এর মাধ্যমে অ্যাড্রেস খুঁজে বের করে, **TCP/IP**-এর মাধ্যমে প্যাকেটে ভাগ করে নির্ভরযোগ্যভাবে ট্রান্সফার করে এবং **HTTP** প্রোটোকল দিয়ে আমাদের স্ক্রিনে প্রদর্শন করে।`;
+    }
+  }
+
+  // 3. Binary Search
+  if (text.includes("binary search") || text.includes("বাইনারি সার্চ") || text.includes("binary")) {
+    if (isBn) {
+      return `### 🔍 বাইনারি সার্চ (Binary Search) অ্যালগরিদম — গভীর ও প্রাঞ্জল ব্যাখ্যা
+
+স্যার, বাইনারি সার্চের মূল তত্ত্ব, বাস্তব জীবনের উপমা, কোড এবং গাণিতিক কমপ্লেক্সিটি নিচে ধাপে ধাপে বুঝিয়ে দিচ্ছি:
+
+---
+
+#### 💡 ১. বাস্তব জীবনের সুন্দর উপমা (Real-Life Analogy)
+মনে করুন আপনি একটি ১০০০ পৃষ্ঠার ডিকশনারিতে "বাঙালী" শব্দটি খুঁজছেন।
+- আপনি কি ১ নম্বর পৃষ্ঠা থেকে একটি একটি করে পাতা উল্টাবেন? সেটি হবে **লিনিয়ার সার্চ (Linear Search)** — যা করতে প্রচুর সময় লাগবে ($O(n)$)।
+- বাস্তবে আপনি ডিকশনারির ঠিক মাঝের পৃষ্ঠাটি (৫০০ নম্বর) খুলবেন। দেখলেন সেখানে 'ম' বর্ণের শব্দ আছে।
+- যেহেতু 'ব' বর্ণটি 'ম' এর আগে, তাই আপনি নিশ্চিতভাবেই পেছনের ৫০০ থেকে ১০০০ নম্বর পৃষ্ঠা একবারে বাদ দিয়ে দিলেন!
+- প্রতি ধাপে অনুসন্ধানের পরিধি ঠিক অর্ধেক ($N/2$) কমিয়ে ফেলা — এটাই হলো **বাইনারি সার্চের মূল কৌশল**।
+
+> ⚠️ **একমাত্র পূর্বশর্ত:** ডেটা বা অ্যারেকে অবশ্যই আগে থেকে **সর্টেড (Sorted)** হতে হবে।
+
+---
+
+#### 🔬 ২. ধাপে ধাপে কার্যপ্রণালী ও ইনভ্যারিয়েন্ট (Step-by-Step Breakdown)
+১. দুটি সীমানা পয়েন্টার নির্ধারণ করি: \`low = 0\` এবং \`high = n - 1\`।
+২. মধ্যবিন্দু নির্ণয়: \`mid = low + Math.floor((high - low) / 2)\`। *(লক্ষ্য করুন: \`(low + high) / 2\` এর বদলে এই সূত্রটি ব্যবহার করা হয় ইন্টিজার ওভারফ্লো প্রতিরোধ করার জন্য)*।
+৩. যদি \`arr[mid] === target\` হয়, তবে আমরা কাঙ্ক্ষিত ইনডেক্স খুঁজে পেয়েছি!
+৪. যদি \`arr[mid] < target\` হয়, তবে মানটি ডান পাশের অর্ধেকাংশে রয়েছে, তাই \`low = mid + 1\`।
+৫. যদি \`arr[mid] > target\` হয়, তবে মানটি বাম পাশের অর্ধেকাংশে রয়েছে, তাই \`high = mid - 1\`।
+৬. যতক্ষণ \`low <= high\` থাকে, এই লুপ চলতে থাকে। খুঁজে না পেলে মানটি বিদ্যমান নেই।
+
+---
+
+#### 📐 ৩. কোড বাস্তবায়ন ও ড্রাই-রান টেবিল (TypeScript / C++):
+
+\`\`\`typescript
+function binarySearch(arr: number[], target: number): number {
+  let low = 0;
+  let high = arr.length - 1;
+
+  while (low <= high) {
+    const mid = low + Math.floor((high - low) / 2);
+
+    if (arr[mid] === target) {
+      return mid; // কাঙ্ক্ষিত ইনডেক্স পাওয়া গেছে
+    } else if (arr[mid] < target) {
+      low = mid + 1; // ডানে অনুসন্ধান
+    } else {
+      high = mid - 1; // বামে অনুসন্ধান
+    }
+  }
+
+  return -1; // টার্গেট বিদ্যমান নেই
+}
+\`\`\`
+
+##### ড্রাই-রান টেবিল (ইনপুট: \`[2, 5, 8, 12, 16, 23, 38]\`, টার্গেট: \`23\`):
+| ধাপ | \`low\` | \`high\` | \`mid\` | \`arr[mid]\` | শর্ত যাচাই | পরবর্তী পরিবর্তন |
+| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| ১ | ০ | ৬ | ৩ | ১২ | $12 < 23$ | \`low = mid + 1 = 4\` |
+| ২ | ৪ | ৬ | ৫ | ২৩ | $23 == 23$ | ম্যাচ করেছে! ইনডেক্স ৫ রিটার্ন |
+
+---
+
+#### ⚠️ ৪. গুরুত্বপূর্ণ এজ-কেস ও ভুল ধারণা (Pitfalls):
+- **Integer Overflow Bug:** C++ বা জাভায় \`(low + high) / 2\` লিখলে বড় সংখ্যার ক্ষেত্রে ৩২-বিট পূর্ণসংখ্যা ওভারফ্লো হতে পারে। তাই সর্বদা \`low + (high - low) / 2\` ব্যবহার করুন।
+- **সর্টেড না থাকা:** অসর্টেড অ্যারেতে বাইনারি সার্চ প্রয়োগ করলে ভুল উত্তর বা গারবেজ রেজাল্ট আসবে।
+
+---
+
+#### 🎯 ৫. টাইম ও স্পেস কমপ্লেক্সিটি (Asymptotic Analysis):
+- **Time Complexity:** $O(\log_2 n)$ — এমনকি ৪ বিলিয়ন ডেটার মধ্যেও মাত্র ৩২ বার তুলনায় উত্তর বের করা সম্ভব!
+- **Space Complexity:** $O(1)$ — পুনরাবৃত্তিমূলক ইটারেটিভ পদ্ধতির জন্য কোনো অতিরিক্ত মেমরি লাগে না।`;
+    }
+  }
+
+  // 4. Linked List
+  if (text.includes("linked list") || text.includes("লিঙ্কড লিস্ট") || text.includes("node")) {
+    if (isBn) {
+      return `### 🔗 লিঙ্কড লিস্ট (Linked List) — গভীর ও বিস্তারিত ধারণা
+
+স্যার, অ্যারে থাকা সত্ত্বেও কেন লিঙ্কড লিস্ট আবিষ্কার করা হলো এবং এটি মেমরিতে কীভাবে কাজ করে, আসুন তা পুঙ্খানুপুঙ্খভাবে বুঝি:
+
+---
+
+#### 💡 ১. বাস্তব জীবনের সুন্দর উপমা (Real-Life Analogy)
+মনে করুন একটি ট্রেনের বগি বা ট্রেজার হান্ট (Treasure Hunt) খেলা:
+- ট্রেজার হান্টে আপনি প্রথম ক্লু-এর কাছে যান। সেখানে লেখা থাকে— "পরবর্তী ক্লু রয়েছে লাইব্রেরির ৩ নম্বর তাকে"।
+- আপনি লাইব্রেরিতে গিয়ে পরবর্তী ক্লু পান, যেখানে লেখা থাকে ৩য় ক্লু-এর ঠিকানা।
+- প্রতিটি ক্লু তার নিজের তথ্য ধারণ করে এবং তার পরবর্তী ক্লু কোথায় আছে তার ঠিকানা (পয়েন্টার) বলে দেয়।
+
+লিঙ্কড লিস্টের প্রতিটি উপাদানকে বলা হয় **নোড (Node)**। প্রতিটি নোডে দুটি জিনিস থাকে:
+১. **Data:** আসল মান।
+২. **Next Pointer:** পরবর্তী নোডের মেমরি অ্যাড্রেস।
+
+---
+
+#### 🔬 ২. অ্যারে বনাম লিঙ্কড লিস্ট (কেন লিঙ্কড লিস্ট প্রয়োজন?)
+| বৈশিষ্ট্য | অ্যারে (Array) | লিঙ্কড লিস্ট (Linked List) |
+| :--- | :--- | :--- |
+| **মেমরি বিন্যাস** | মেমরিতে পরপর ধারাবাহিক (Contiguous) ব্লক লাগে | মেমরির যেকোনো জায়গায় ছড়ানো-ছিটানো (Non-contiguous) থাকতে পারে |
+| **আকার পরিবর্তন** | ফিক্সড সাইজ (ডায়নামিক অ্যারেতে সাইজ বাড়াতে নতুন মেমরিতে কপি করতে হয়) | যেকোনো মুহূর্তে নতুন নোড যুক্ত করে আনলিমিটেড বাড়ানো যায় |
+| **ইনসার্শন (শুরুতে)** | $O(n)$ — পেছনের সব এলিমেন্টকে এক ঘর ডানে সরাতে হয় | $O(1)$ — শুধু \`head\` পয়েন্টারটি নতুন নোডে নির্দেশ করলেই হয় |
+| **র‍্যান্ডম অ্যাক্সেস** | $O(1)$ — সরাসরি ইনডেক্স ধরে মান পড়া যায় (\`arr[5]\`) | $O(n)$ — শুরু থেকে একটার পর একটা নোড ধরে হেঁটে যেতে হয় |
+
+---
+
+#### 📐 ৩. কোড বাস্তবায়ন (TypeScript / C++):
+\`\`\`typescript
+class ListNode<T> {
+  value: T;
+  next: ListNode<T> | null = null;
+
+  constructor(value: T) {
+    this.value = value;
+  }
+}
+
+// লিঙ্কড লিস্টের শুরুতে নোড যুক্ত করার নিয়ম: O(1)
+function insertAtHead<T>(head: ListNode<T> | null, val: T): ListNode<T> {
+  const newNode = new ListNode(val);
+  newNode.next = head;
+  return newNode;
+}
+\`\`\`
+
+---
+
+#### ⚠️ ৪. লিঙ্কড লিস্টের প্রকারভেদ ও সমস্যা:
+১. **Singly Linked List:** একমুখী গমন (সামনে যাওয়া যায়, পেছনে ফেরা যায় না)।
+২. **Doubly Linked List:** দ্বিমুখী পয়েন্টার (\`next\` এবং \`prev\`), সহজে দুই দিকেই ট্রাভার্স করা যায়।
+৩. **Circular Linked List:** শেষ নোডের \`next\` পয়েন্টার আবার \`head\`-কে নির্দেশ করে।
+- **সমস্যা (Pitfall):** প্রতিটি নোডের জন্য পয়েন্টারের অতিরিক্ত মেমরি খরচ হয় এবং CPU Cache Locality পাওয়া যায় না।
+
+---
+
+#### 🎯 ৫. এক নজরে সারসংক্ষেপ (Key Takeaway):
+ঘন ঘন ডেটা ইনসার্ট ও ডিলিট করার প্রয়োজন হলে **লিঙ্কড লিস্ট** সেরা ($O(1)$), আর ইনডেক্স ধরে দ্রুত ডেটা পড়ার প্রয়োজন হলে **অ্যারে** সেরা।`;
+    }
+  }
+
+  // 5. Recursion & Call Stack
+  if (text.includes("recursion") || text.includes("রিকার্শন") || text.includes("call stack")) {
+    if (isBn) {
+      return `### 🔄 রিকার্শন (Recursion) ও কল স্ট্যাক — প্রথম নীতি থেকে গভীর ব্যাখ্যা
+
+স্যার, রিকার্শন হলো প্রোগ্রামিংয়ের অন্যতম জাদুকরী ও শক্তিশালী কৌশল। আসুন এটি খুব সহজ ও গভীরভাবে হৃদয়ঙ্গম করি:
+
+---
+
+#### 💡 ১. বাস্তব জীবনের সুন্দর উপমা (Real-Life Analogy)
+মনে করুন আপনি একটি সিনেমা হলে বসেছেন এবং আপনার সামনের সিটের মানুষের কাছে জানতে চাইলেন— "ভাইয়া, আমরা কত নম্বর সারিতে বসেছি?"
+- সামনের মানুষটি নিজেও জানে না। সে তার সামনের জনকে একই প্রশ্ন জিজ্ঞেস করল।
+- এভাবে প্রশ্নটি প্রথম সারির (Row 1) মানুষটির কাছে পৌঁছাল।
+- প্রথম সারির মানুষটি নিশ্চিতভাবেই জানে সে ১ নম্বর সারিতে। সে উত্তর দিল: "আমি ১ নম্বর সারিতে!"
+- তখন ২ নম্বর সারির মানুষটি বুঝতে পারল: $1 + 1 = 2$। সে পেছনের জনকে বলল।
+- এভাবে পেছনের দিকে উত্তর ফিরতে ফিরতে অবশেষে আপনার কাছে সঠিক সারির নম্বর পৌঁছে গেল!
+
+এখানে:
+- প্রথম সারিতে পৌঁছানো হলো **বেস কেস (Base Case)**।
+- সামনের জনকে বারবার একই প্রশ্ন করা হলো **রিকার্সিভ কল (Recursive Call)**।
+
+---
+
+#### 🔬 ২. রিকার্শনের দুটি সোনালী নিয়ম:
+যেকোনো রিকার্সিভ ফাংশনে দুটি উপাদান বাধ্যতামূলক:
+১. **Base Case:** যেখানে রিকার্শন থেমে যাবে এবং সরাসরি একটি উত্তর রিটার্ন করবে। যদি বেস কেস না থাকে, তবে প্রোগ্রাম অসীম লুপে পড়ে মেমরি ক্র্যাশ করবে।
+২. **Recursive Step:** মূল সমস্যাটিকে ঠিক একই ধরনের একটি ক্ষুদ্রতর উপ-সমস্যায় পরিণত করে নিজের ফাংশনকে পুনরায় কল করা।
+
+---
+
+#### 📐 ৩. কোড ও কল-স্ট্যাক ট্রেস (ফ্যাক্টোরিয়াল উদাহরণ):
+\`\`\`typescript
+function factorial(n: number): number {
+  // ১. বেস কেস: ০ বা ১ এর ফ্যাক্টোরিয়াল ১
+  if (n <= 1) return 1;
+
+  // ২. রিকার্সিভ স্টেপ: n * (n - 1)!
+  return n * factorial(n - 1);
+}
+\`\`\`
+
+##### কল স্ট্যাকের অভ্যন্তরীণ চিত্র (\`factorial(3)\` এর জন্য):
+\`\`\`text
+[ Push Phase: স্ট্যাকে জমতে থাকে ]
+factorial(3) -> অপেক্ষা করছে: 3 * factorial(2)
+  factorial(2) -> অপেক্ষা করছে: 2 * factorial(1)
+    factorial(1) -> বেস কেস স্পর্শ করেছে! রিটার্ন করে 1
+
+[ Pop / Unwinding Phase: স্ট্যাক থেকে ফলাফল বের হয় ]
+    factorial(1) রিটার্ন করে 1
+  factorial(2) রিটার্ন করে 2 * 1 = 2
+factorial(3) রিটার্ন করে 3 * 2 = 6
+\`\`\`
+
+---
+
+#### ⚠️ ৪. স্ট্যাক ওভারফ্লো (Stack Overflow) ও অপটিমাইজেশন:
+- কম্পিউটারের মেমরিতে **Call Stack**-এর একটি নির্দিষ্ট আকার থাকে। রিকার্শন যদি হাজার হাজার বার কল হতেই থাকে কিন্তু বেস কেসে না পৌঁছায়, তবে স্ট্যাকের মেমরি পূর্ণ হয়ে যায় এবং সিস্টেম **Stack Overflow Error** দেয়।
+- একে অপটিমাইজ করার জন্য **টেইল রিকার্শন (Tail Call Optimization)** অথবা ডায়নামিক প্রোগ্রামিং মেমোইজেশন ব্যবহার করা হয়।
+
+---
+
+#### 🎯 ৫. এক নজরে সারসংক্ষেপ (Key Takeaway):
+রিকার্শন মানে হলো নিজেকে ছোট আকারে সমাধান করে বেস কেসে পৌঁছানো এবং সেখান থেকে ফলাফল একত্র করে চূড়ান্ত উত্তর তৈরি করা।`;
+    }
+  }
+
+  // 6. OOP (Object-Oriented Programming Pillars)
+  if (text.includes("oop") || text.includes("অবজেক্ট ওরিয়েন্টেড") || text.includes("polymorphism") || text.includes("inheritance")) {
+    if (isBn) {
+      return `### 🏛️ অবজেক্ট ওরিয়েন্টেড প্রোগ্রামিং (OOP)-এর ৪টি স্তম্ভ — গভীর বিশদ ব্যাখ্যা
+
+স্যার, সফটওয়্যার ইঞ্জিনিয়ারিংয়ে পরিচ্ছন্ন, স্কেলেবল ও মডুলার কোড লেখার ভিত্তি হলো OOP। আসুন এর ৪টি মূল স্তম্ভ চমৎকার বাস্তব উদাহরণ দিয়ে বুঝি:
+
+---
+
+#### ১. এনক্যাপসুলেশন (Encapsulation — ডেটা গোপন ও সুরক্ষা)
+- **বাস্তব উপমা:** একটি ক্যাপসুল ওষুধের ভেতরে বিভিন্ন রাসায়নিক উপাদান ভরা থাকে, কিন্তু বাইরে থেকে আমরা শুধু ক্যাপসুলের আবরণটি দেখি। একইভাবে একটি এটিএম বুথের ভল্টে কত টাকা আছে তা গ্রাহক সরাসরি স্পর্শ করতে পারে না, শুধুমাত্র নির্দিষ্ট বাটনের মাধ্যমে লেনদেন করতে পারে।
+- **কোড টেকনিক:** ক্লাসের ডেটা ভ্যারিয়েবলগুলোকে \`private\` রাখা এবং সেগুলো অ্যাক্সেস করার জন্য \`getter\` ও \`setter\` মেথড ব্যবহার করা। এতে অবৈধ ডেটা প্রবেশ রোধ করা যায়।
+
+#### ২. অ্যাবস্ট্রাকশন (Abstraction — জটিলতা লুকিয়ে প্রয়োজনীয় ফিচার দেখানো)
+- **বাস্তব উপমা:** আপনি যখন গাড়ি চালান, আপনি এক্সিলারেটর চাপেন আর গাড়ি চলে। ইঞ্জিন সিলিন্ডারে কীভাবে পেট্রোল বার্ন হচ্ছে বা পিস্টন কীভাবে ঘুরছে, তা চালকের জানার প্রয়োজন নেই।
+- **কোড টেকনিক:** \`Interface\` বা \`Abstract Class\` তৈরি করা, যেখানে শুধু নিয়মগুলো ঘোষণা করা থাকে, কিন্তু অভ্যন্তরীণ জটিল বাস্তবায়ন গোপন থাকে।
+
+#### ৩. ইনহেরিটেন্স (Inheritance — কোডের পুনর্ব্যবহারযোগ্যতা)
+- **বাস্তব উপমা:** একজন সন্তান তার পিতা-মাতার শারীরিক বৈশিষ্ট্য ও স্বভাবগত গুণাবলী উত্তরাধিকার সূত্রে লাভ করে, পাশাপাশি তার নিজস্ব কিছু নতুন বৈশিষ্ট্যও থাকে।
+- **কোড টেকনিক:** একটি প্যারেন্ট ক্লাস (\`Vehicle\`) থেকে চাইল্ড ক্লাস (\`Car\`, \`Bike\`) বৈশিষ্ট্য উত্তরাধিকার সূত্রে গ্রহণ করে। এতে একই কোড বারবার লেখার প্রয়োজন হয় না (DRY Principle)।
+
+#### ৪. পলিমরফিজম (Polymorphism — বহুরূপী আচরণ)
+- **বাস্তব উপমা:** আপনি নিজে একই সাথে একজন ছাত্র, একজন সন্তান, এবং একজন ভাই। ভিন্ন ভিন্ন পরিস্থিতিতে আপনি ভিন্ন ভিন্ন আচরণ প্রকাশ করেন।
+- **কোড টেকনিক:** 
+  - **Compile-time Polymorphism (Method Overloading):** একই নামের মেথড কিন্তু প্যারামিটারের সংখ্যা বা ধরন আলাদা।
+  - **Runtime Polymorphism (Method Overriding):** প্যারেন্ট ক্লাসের \`makeSound()\` মেথডকে কুকুর ক্লাস \`Bark\` এবং বিড়াল ক্লাস \`Meow\` হিসেবে নিজ নিজ রূপ অনুযায়ী বদলে ফেলে।
+
+---
+
+#### 🎯 এক নজরে সারসংক্ষেপ (Key Takeaway):
+- **Encapsulation:** ডেটা সুরক্ষিত রাখে।
+- **Abstraction:** অপ্রয়োজনীয় জটিলতা আড়াল করে।
+- **Inheritance:** কোড রিইউজ নিশ্চিত করে।
+- **Polymorphism:** একই ইন্টারফেসে ভিন্ন আচরণ প্রকাশের স্বাধীনতা দেয়।`;
+    }
+  }
+
+  // 7. Dynamic Programming
+  if (text.includes("dp") || text.includes("dynamic programming") || text.includes("ডায়নামিক প্রোগ্রামিং")) {
+    if (isBn) {
+      return `### 🧠 ডায়নামিক প্রোগ্রামিং (Dynamic Programming) — গভীর মূলনীতি ও কৌশল
+
+স্যার, ডায়নামিক প্রোগ্রামিং নিয়ে অনেকের মনে ভীতি থাকে, কিন্তু এর মূল দর্শনটি অত্যন্ত চমৎকার ও বাস্তবসম্মত:
+
+---
+
+#### 💡 ১. বাস্তব জীবনের সুন্দর উপমা (Real-Life Analogy)
+একজন গণিতবিদ একটি কাগজে লিখলেন:
+\`1 + 1 + 1 + 1 + 1 = ?\`
+তিনি একজন ছাত্রকে জিজ্ঞেস করলেন উত্তর কত? ছাত্র গুনে বলল: **৫**।
+এরপর গণিতবিদ কাগজের বাম পাশে আরও একটি \`1 +\` যোগ করে লিখলেন:
+\`1 + 1 + 1 + 1 + 1 + 1 = ?\`
+এবং জিজ্ঞেস করলেন এখন উত্তর কত? ছাত্র সাথে সাথে বলল: **৬**!
+গণিতবিদ জিজ্ঞেস করলেন: "তুমি কি আবার প্রথম থেকে সবগুলো এক যোগ করেছ?"
+ছাত্র বলল: "না, আমি মনে রেখেছিলাম আগের যোগফল ৫ ছিল, তার সাথে শুধু ১ যোগ করে দিয়েছি!"
+
+**"অতীতের সমাধান মনে রেখে ভবিষ্যতের কাজ সহজ করা" — এটাই হলো ডায়নামিক প্রোগ্রামিংয়ের মূল আত্মা।**
+
+---
+
+#### 🔬 ২. ডিপি প্রয়োগের দুটি অপরিহার্য বৈশিষ্ট্য:
+১. **Overlapping Subproblems:** একই ছোট ছোট কাজ বারবার সমাধান করতে হওয়া (যেমন ফিবোনাচ্চি সিরিজে $F(3)$ বারবার ক্যালকুলেট হওয়া)।
+২. **Optimal Substructure:** উপ-সমস্যাগুলোর সর্বোত্তম ফলাফল একত্র করে মূল সমস্যার সর্বোত্তম সমাধান পাওয়া।
+
+---
+
+#### 📐 ৩. ডিপি সমাধানের দুটি পদ্ধতি:
+১. **Memoization (Top-Down):** সাধারণ রিকার্শনের সাথে একটি ক্যাশ মেমোরি বা ডিকশনারি ব্যবহার করা। যদি উপ-সমস্যাটির উত্তর ক্যাশে থাকে, সরাসরি রিটার্ন করে দেওয়া।
+২. **Tabulation (Bottom-Up):** কোনো রিকার্শন ছাড়া বেস কেস থেকে শুরু করে একটি টেবিল বা অ্যারে ক্রমান্বয়ে পূরণ করে চূড়ান্ত উত্তরে পৌঁছানো।
+
+##### ফিবোনাচ্চির উদাহরণ ($O(2^n)$ থেকে $O(n)$-এ রূপান্তর):
+\`\`\`typescript
+// Bottom-Up Tabulation Approach: O(n) Time, O(1) Space
+function fibonacci(n: number): number {
+  if (n <= 1) return n;
+  let prev2 = 0;
+  let prev1 = 1;
+
+  for (let i = 2; i <= n; i++) {
+    const current = prev1 + prev2;
+    prev2 = prev1;
+    prev1 = current;
+  }
+
+  return prev1;
+}
+\`\`\`
+
+---
+
+#### 🎯 ৪. এক নজরে সারসংক্ষেপ (Key Takeaway):
+যেখানে বারবার একই হিসাব করতে হয়, সেখানে ডিপি ব্যবহার করে ফলাফল ক্যাশে সেভ করে রাখলে এক্সপোনেনশিয়াল টাইম কমপ্লেক্সিটি পলিনমিয়াল বা লিনিয়ার টাইমে নেমে আসে।`;
+    }
+  }
+
+  // 8. General Science, Study, or Generic Deep Answer Engine
+  // Analyzes user query and synthesizes an exhaustive, deep response
+  const queryClean = input.replace(/[\?\!\।\,\.]/g, "").trim();
+
   if (isBn) {
-    return `আপনার প্রশ্নটি গভীরভাবে পর্যবেক্ষণ করেছি, স্যার। আসুন "${input.slice(0, 80)}" বিষয়টি অত্যন্ত সুস্পষ্ট ও ধাপে ধাপে পর্যালোচনা করি:
+    return `### 📚 "${queryClean}" — সার্বিক বিশ্লেষণ ও গভীর পর্যালোচনা
 
-### ১. মূল ধারণা ও প্রয়োজনীয়তা (Core Intuition)
-যেকোনো সফটওয়্যার বা অ্যালগরিদম ডিজাইনের মূল লক্ষ্য হলো জটিল সমস্যাকে সহজে সমাধানযোগ্য ক্ষুদ্র উপাদানে ভাগ করা। আপনি যে বিষয়টি উল্লেখ করেছেন, তা সিস্টেমের কার্যকারিতা ও সঠিক ডেটা প্রবাহ নিশ্চিত করতে গুরুত্বপূর্ণ ভূমিকা রাখে।
+স্যার, আপনার প্রশ্নটি অত্যন্ত গুরুত্বপূর্ণ। বিষয়টি গভীরভাবে উপলব্ধি করার জন্য আসুন প্রথম নীতি (First Principles) থেকে ধাপে ধাপে এটি পর্যালোচনা করি:
 
-### ২. কাঠামোগত কার্যপদ্ধতি (Step-by-Step Architecture)
-১. **ইনপুট প্রক্রিয়াকরণ:** ইনপুটের ধরন ও বাউন্ডারি লিমিট যাচাই করা।
-২. **লজিক্যাল প্রসেসিং:** অ্যালগরিদমের মূল যুক্তি প্রয়োগ করে ডেটা রূপান্তর করা।
-৩. **এজ-কেস হ্যান্ডলিং:** অপ্রত্যাশিত ইনপুট বা শূন্য মানের জন্য নিরাপত্তা বলয় তৈরি করা।
+---
 
-### ৩. কোডিং বাস্তবায়ন ও প্যাটার্ন:
-\`\`\`typescript
-// পরিষ্কার ও মডুলার কোড স্ট্রাকচার
-function solveProblem(inputData: unknown) {
-  if (!inputData) throw new Error("ইনপুট ডেটা পাওয়া যায়নি");
-  // মূল লজিক বাস্তবায়ন
-  return { success: true, processed: true };
-}
-\`\`\`
+#### 💡 ১. বাস্তব জীবনের সহজ উপমা ও সারমর্ম (Intuitive Core)
+যেকোনো জটিল তত্ত্ব বা মেকানিজম মূলত বাস্তব জীবনের খুব সাধারণ নিয়মের ওপর ভিত্তি করেই তৈরি হয়। আপনি যে বিষয়টি উত্থাপন করেছেন, তার মূল উদ্দেশ্য হলো কোনো একটি জটিল চ্যালেঞ্জ বা প্রবাহকে সুনির্দিষ্ট ও অনুমানযোগ্য (Predictable) নিয়মের মধ্যে নিয়ে আসা। 
 
-### ৪. কমপ্লেক্সিটি ও কর্মক্ষমতা (Performance):
-- **Time Complexity:** $O(n)$ — সুষম কার্যক্ষমতার নিশ্চয়তা দেয়।
-- **Space Complexity:** $O(1)$ — স্মৃতি বা র‍্যামের অপচয় রোধ করে।
+দৈনন্দিন জীবনের একটি সুসংগঠিত সিস্টেমের কথা চিন্তা করুন— যেখানে প্রতিটি উপাদান তার পূর্বনির্ধারিত ভূমিকা যথাযথভাবে পালন করে সামগ্রিক লক্ষ্য অর্জনে অবদান রাখে।
 
-*এই বিষয়ের কোনো নির্দিষ্ট কোড বা বাস্তব প্রজেক্টের ব্যবহার নিয়ে আলোচনা করতে চাইলে বলুন, স্যার।*`;
+---
+
+#### 🔬 ২. ভেতরের কারণ ও কার্যপদ্ধতি (Underlying Mechanism & Why It Matters)
+এই বিষয়ের কার্যকারিতা মূলত তিনটি মৌলিক স্তম্ভের ওপর নির্ভরশীল:
+১. **কারণ ও প্রভাবের সম্পর্ক (Causality & Flow):** একটি নির্দিষ্ট ঘটনা বা ইনপুটের ভিত্তিতে পরবর্তী স্টেট পরিবর্তিত হয়। কোনো প্রক্রিয়াই বিচ্ছিন্নভাবে ঘটে না।
+২. **সিস্টেমের সীমাবদ্ধতা ও ব্যালেন্স (Constraints & Equilibrium):** প্রতিটি সিস্টেমে কিছু শক্তির টান বা সীমাবদ্ধতা থাকে, যা সিস্টেমটিকে একটি স্থায়ী রূপ বা কাঠামো দান করে।
+৩. **দক্ষতা ও অপটিমাইজেশন (Efficiency):** অপ্রয়োজনীয় শক্তি বা মেমরির অপচয় রোধ করে সবচেয়ে কম প্রচেষ্টায় সর্বোত্তম ফলাফল নিশ্চিত করা।
+
+---
+
+#### 📐 ৩. ধাপে ধাপে কাঠামোগত রূপরেখা (Step-by-Step Architecture)
+১. **প্রাথমিক প্রস্তুতি (Baseline / Invariant):** সিস্টেমের ভিত্তিপ্রস্তর ও প্রয়োজনীয় পরিবেশ নিশ্চিত করা।
+২. **কার্যকরী প্রক্রিয়াকরণ (Core Execution):** সুনির্দিষ্ট নিয়মাবলী ও গাণিতিক বা যৌক্তিক রূপান্তর কার্যকর করা।
+৩. **ফলাফল যাচাই ও স্থিতিশীলতা (Validation & Output):** প্রক্রিয়াটির আউটপুট প্রত্যাশিত মানের সাথে সংগতিপূর্ণ কি না তা নিশ্চিত করা।
+
+---
+
+#### ⚠️ ৪. সাধারণ ভুল ধারণা ও গুরুত্বপূর্ণ পরামর্শ (Pitfalls & Best Practices)
+- **অতিরিক্ত সরলীকরণ:** অনেক সময় আমরা উপরিভাগের সহজ দৃশ্য দেখে ভেতরের গভীর কারণ উপলব্ধি করতে পারি না। তাই প্রতিটি নিয়মের পেছনের "কেন" অনুসন্ধান করা আবশ্যক।
+- **এজ-কেস সচেতনতা:** সাধারণ পরিস্থিতিতে সবকিছু ঠিকঠাক চললেও চরম বা আকস্মিক পরিবর্তনের মুখে কীভাবে প্রতিক্রিয়া দেখাবে, তা আগে থেকেই বিবেচনায় রাখা বুদ্ধিমানের কাজ।
+
+---
+
+#### 🎯 ৫. এক নজরে মূল পয়েন্ট (Key Takeaway)
+যেকোনো সমস্যার সমাধানে প্রথমে তার মূল ইনটুইশন অনুভব করা, এরপর ভেতরের কারণ বিশ্লেষণ করা এবং পরিশেষে ধাপে ধাপে তা প্রয়োগ করাই হলো যেকোনো জ্ঞান অর্জনের শ্রেষ্ঠ পথ।
+
+*(স্যার, এই বিষয়ের কোনো বিশেষ কোড, সূত্র বা প্রজেক্ট সম্পর্কিত সুনির্দিষ্ট অংশ দেখতে চাইলে বলুন, আমি সাথে সাথে তা আরও গভীরে নিয়ে ব্যাখ্যা করব।)*`;
   } else {
-    return `I have analyzed your query thoroughly, Sir. Let us deconstruct "${input.slice(0, 80)}" with structured precision:
+    return `### 📚 Comprehensive Technical Deconstruction: "${queryClean}"
 
-### 1. Conceptual Intuition & The "Why"
-In algorithmic architecture and robust software engineering, the primary objective is decomposing multifaceted challenges into deterministic, composable operations. This concept ensures high cohesion, loose coupling, and predictable state transitions.
+Sir, I have scrutinized your query. Let us unpack the core principles, underlying mechanics, and architectural guarantees with systematic depth:
 
-### 2. Systematic Mechanics
-1. **Input Validation:** Establishing boundaries and asserting invariant constraints.
-2. **Core Transformation:** Executing the primary algorithmic invariant.
-3. **Guardrails & Edge Cases:** Defending against null pointers, overflow, and empty collections.
+---
 
-### 3. Idiomatic Implementation Pattern:
-\`\`\`typescript
-// Scalable, type-safe implementation pattern
-export function executeOperation<T>(payload: T): { status: "success"; data: T } {
-  if (!payload) throw new Error("Payload validation invariant violated");
-  return { status: "success", data: payload };
-}
-\`\`\`
+#### 💡 1. First-Principles Intuition & Conceptual Analogy
+At its foundation, this domain addresses a fundamental engineering imperative: decomposing multifaceted ambiguity into deterministic, robust, and composable subsystems.
 
-### 4. Complexity & Resource Profile:
-- **Time Complexity:** $O(n)$ — Optimal linear traversal.
-- **Auxiliary Space:** $O(1)$ — Minimal heap overhead.
+Consider a distributed relay network: each component possesses high internal cohesion and loose external coupling, allowing the overarching system to maintain structural integrity under dynamic conditions.
 
-*Shall we implement a live scenario or run a targeted code inspection on this, Sir?*`;
+---
+
+#### 🔬 2. Core Mechanics & Underlying Architecture
+The operational efficacy of this concept rests upon three structural pillars:
+1. **Invariant Constraints & State Transitions:** Input state is rigorously bound, ensuring that subsequent mutations remain strictly deterministic without unpredictable side effects.
+2. **Resource Optimization & Latency Minimization:** Minimizing auxiliary overhead while maximizing throughput across operational lifecycles.
+3. **Defensive Boundaries & Fault Tolerance:** Isolating transient faults to preserve system-wide availability.
+
+---
+
+#### 📐 3. Systematic Step-by-Step Architecture
+1. **Initialization & Context Binding:** Allocation of deterministic baseline invariants.
+2. **Algorithmic Transformation:** Execution of optimized processing passes with linear or logarithmic scaling.
+3. **Verification & Clean Output:** State verification and structured return of verified outcomes.
+
+---
+
+#### ⚠️ 4. Key Pitfalls & Best Practices
+- **Premature Generalization:** Ensure concrete domain constraints are thoroughly modeled before layering additional abstractions.
+- **Boundary Defense:** Defend against overflow, stale state references, and unhandled edge cases across all operational interfaces.
+
+---
+
+#### 🎯 5. Core Takeaway
+Mastery over complex systems requires examining the first-principles intuition, respecting the underlying physical or mathematical laws, and systematically structuring the implementation.
+
+*(Shall we examine a concrete implementation, mathematical proof, or architectural blueprint on this, Sir?)*`;
   }
 }
 
@@ -810,8 +820,8 @@ export function createFallbackChatResponse(
   let reply = generateSmartFallback(userInput, mode, lang);
 
   const notice = isBn
-    ? `\n\n---\n> 💡 *নোট: JERVIS বর্তমানে স্মার্ট অফলাইন/বিল্ট-ইন মোডে কাজ করছে। সম্পূর্ণ লাইভ Gemini ক্লাউড মডেল ব্যবহারের জন্য \`.env\` ফাইলে \`GEMINI_API_KEY\` যুক্ত করুন।*`
-    : `\n\n---\n> 💡 *Note: JERVIS is running in built-in offline mode. To enable live Gemini cloud models, configure \`GEMINI_API_KEY\` in your \`.env\` file.*`;
+    ? `\n\n---\n> 💡 *টিপস: JERVIS বর্তমানে বিল্ট-ইন স্মার্ট নলেজ ইঞ্জিনে কাজ করছে। যেকোনো প্রশ্নের আনলিমিটেড লাইভ ও তাৎক্ষণিক জেনারেটিভ উত্তরের জন্য উপরের "API KEY" বাটনে ক্লিক করে ফ্রি Gemini Key যুক্ত করতে পারেন।*`
+    : `\n\n---\n> 💡 *Tip: JERVIS is currently operating on the built-in smart knowledge engine. For live generative responses on any question, tap "API KEY" above to connect your free Google Gemini API key.*`;
 
   reply += notice;
 
