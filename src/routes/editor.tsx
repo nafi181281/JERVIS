@@ -4,7 +4,7 @@ import { Play, Bug, Repeat, BookOpen, Volume2, Square, Copy, Check, RotateCcw } 
 import { Shell, Panel } from "@/components/jervis/Shell";
 import { CodeEditor, LANGS, type LangId } from "@/components/jervis/CodeEditor";
 import { Markdown } from "@/components/jervis/Markdown";
-import { LangToggle, VoicePicker } from "@/components/jervis/Controls";
+import { LangToggle, VoicePicker, ApiKeyDialog } from "@/components/jervis/Controls";
 import { useJervisChat, textOf } from "@/hooks/use-jervis-chat";
 import { useVoice, type Lang } from "@/hooks/use-voice";
 import type { JervisMode } from "@/lib/ai/prompts";
@@ -128,6 +128,7 @@ function EditorPage() {
                   </option>
                 ))}
               </select>
+              <ApiKeyDialog />
               <LangToggle lang={spoken} setLang={setSpoken} />
             </div>
             <div className="flex items-center gap-2">
