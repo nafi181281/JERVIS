@@ -111,11 +111,12 @@ export const Route = createFileRoute("/api/speech")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { text, lang } = (await request.json()) as { text?: string; lang?: string };
-        const clean = (text ?? "").trim().slice(0, 1500);
+        const headerKey = request.headers.get("x-gemini-api-key");
+        const body = (await request.json().catch(() => ({}))) as { text?: string; lang?: string; apiKey?: string };
+        const clean = (body.text ?? "").trim().slice(0, 1500);
         if (!clean) return Response.json({ error: "Nothing to say." }, { status: 400 });
 
-        const apiKey = process.env["GEMINI_API_KEY"];
+        const apiKey = (headerKey && headerKey.trim()) || (body.apiKey && body.apiKey.trim()) || process.env["GEMINI_API_KEY"];
 
         // 1. If Gemini API key is configured, try Gemini HD Audio TTS
         if (apiKey && apiKey.trim() !== "" && apiKey !== "AIzaSy...") {
