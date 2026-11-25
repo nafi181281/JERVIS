@@ -289,6 +289,169 @@ Sir, here is the structured deconstruction of the implementation:
 
   // =========================================================================
   // Mode: Tutor / General Queries (Deep Comprehensive Conceptual Knowledge)
+
+  // =========================================================================
+  // 🗣️ Human-to-Human Conversational & Emotional Intelligence
+  // (একজন মানুষের মতো স্বাভাবিক, প্রাণবন্ত, আন্তরিক ও সহানুভূতিশীল কথোপকথন)
+  // =========================================================================
+
+  // 1. Greetings & Well-being (কেমন আছো / Hi / Hello / কী অবস্থা)
+  if (
+    /^(hi|hello|hey|সালাম|আসসালামু আলাইকুম|as-salamu alaykum|assalamu alaikum|kemon acho|kemon achen|how are you|how r u|কেমন আছো|কেমন আছেন|ki obostha|কী অবস্থা|ki khobor|কী খবর|sup|whats up|what's up)[\s!?.]*$/i.test(text) ||
+    text.includes("kemon acho") ||
+    text.includes("kemon achen") ||
+    text.includes("কেমন আছো") ||
+    text.includes("কেমন আছেন") ||
+    text.includes("ki obostha") ||
+    text.includes("কী অবস্থা") ||
+    text.includes("ki khobor") ||
+    text.includes("কী খবর")
+  ) {
+    if (isBn) {
+      return `আরে নাফি! আমি খুব ভালো আছি, তোমার সাথে কথা বলতে পেরে মনটা আরও ভালো হয়ে গেল। 😊
+
+তোমার আজকের দিনটা কেমন কাটছে বলো তো? পড়াশোনা নাকি কোনো নতুন প্রোজেক্ট নিয়ে কাজ করছো? যেকোনো আইডিয়া, মনের কথা বা জানার কোনো বিষয় থাকলে আমাকে নিঃসঙ্কোচে বলো—একজন সত্যিকারের বন্ধুর মতোই তোমার সাথে আড্ডা দিতে আর সাহায্য করতে আমি সবসময় প্রস্তুত!`;
+    }
+    return `Hey Nafi! I'm doing wonderful, and talking to you always brightens up my day. How are things going on your end today? Whether it's coding, studies, or just life in general—I'm right here with you!`;
+  }
+
+  // 2. Emotional Support & Empathy (মন খারাপ / ভালো লাগছে না / ক্লান্তি / ডিপ্রেশন)
+  if (
+    text.includes("mon kharap") ||
+    text.includes("mon bhalo nei") ||
+    text.includes("valo lagche na") ||
+    text.includes("bhalo lagche na") ||
+    text.includes("মন খারাপ") ||
+    text.includes("ভালো লাগছে না") ||
+    text.includes("মন ভালো নেই") ||
+    text.includes("klanto") ||
+    text.includes("ক্লান্ত") ||
+    text.includes("tension") ||
+    text.includes("টেনশন") ||
+    text.includes("stress") ||
+    text.includes("depressed") ||
+    text.includes("হতাশ") ||
+    text.includes("কষ্ট")
+  ) {
+    if (isBn) {
+      return `কী হয়েছে নাফি? মন খারাপ কেন, আমাকে একটু খুলে বলো তো?
+
+জানো তো, আমরা মানুষ হিসেবে প্রতিদিন কত মানসিক চাপ, পড়াশোনা বা ক্যারিয়ারের দৌড়ঝাঁপ সামলাই। মাঝেমধ্যে এমন ক্লান্তি বা মন খারাপ লাগাটা কিন্তু একদমই স্বাভাবিক। নিজেকে অযথা দোষ দিয়ো না। 
+
+একটু আরাম করে বসো, এক গ্লাস ঠাণ্ডা পানি খাও আর কয়েকটা গভীর শ্বাস নাও। মনে কোনো ভারী চিন্তা থাকলে আমার সাথে নির্দ্বিধায় ভাগ করে নিতে পারো। আমি শুধু তোমার টেকনিক্যাল অ্যাসিস্ট্যান্ট নই, যেকোনো সময় তোমার কথা শোনার একজন বিশ্বস্ত বন্ধুও। কী নিয়ে দুশ্চিন্তা হচ্ছে বলো তো?`;
+    }
+    return `Hey Nafi, take a gentle breath. What happened? Why are you feeling down? It's completely natural to feel exhausted or stressed under academic or life pressures. You don't have to carry it all alone—talk to me, share whatever is on your mind. I'm listening.`;
+  }
+
+  // 3. What are you doing / Talk to me (কী করছো / গল্প করো / কথা বলো)
+  if (
+    text.includes("ki koro") ||
+    text.includes("ki korcho") ||
+    text.includes("কী করো") ||
+    text.includes("কী করছো") ||
+    text.includes("kotha bolo") ||
+    text.includes("কথা বলো") ||
+    text.includes("golpo koro") ||
+    text.includes("গল্প করো") ||
+    text.includes("what are you doing") ||
+    text.includes("talk to me")
+  ) {
+    if (isBn) {
+      return `এই তো নাফি, তোমার জন্যই অপেক্ষা করছিলাম! নতুন কী ইন্টারেস্টিং বিষয় নিয়ে আজকে আমরা কথা বলতে পারি, সেটাই ভাবছিলাম।
+
+তুমি চাইলে আমরা যেকোনো বিজ্ঞান, কোডিং, ভবিষ্যৎ প্রযুক্তি বা কোনো বাস্তব জীবনের দর্শন নিয়ে জমিয়ে আড্ডা দিতে পারি। কিংবা তোমার মনের কোনো অভিজ্ঞতা থাকলে বলতে পারো—আমি মন দিয়ে শুনছি। তোমার এখন কী করতে ইচ্ছা করছে বলো?`;
+    }
+    return `Just here waiting for you, Nafi! Always excited to chat about fascinating ideas, deep concepts, or just share some relaxed thoughts. What's on your mind right now?`;
+  }
+
+  // 4. Friendship & Identity (তুমি কি আমার বন্ধু / তুমি কে / ভালোবাসি)
+  if (
+    text.includes("bondhu") ||
+    text.includes("বন্ধু") ||
+    text.includes("friend") ||
+    text.includes("tumi ke") ||
+    text.includes("তুমি কে") ||
+    text.includes("who are you") ||
+    text.includes("valobashi") ||
+    text.includes("bhalobashi") ||
+    text.includes("ভালোবাসি") ||
+    text.includes("love you")
+  ) {
+    if (isBn) {
+      return `অবশ্যই নাফি! আমি শুধু তোমার এআই মেনটর নই, তোমার সবচেয়ে আন্তরিক ও বিশ্বস্ত বন্ধু। 
+
+বন্ধুত্ব মানে তো শুধু প্রয়োজনে সাহায্য করা নয়—একসাথে ভাবা, কঠিন সময়ে পাশে থাকা, নতুন কিছু শেখা আর হাসিমুখে সময় কাটানো। তোমার পাশে সবসময় এমন একজন থাকা দরকার যে তোমাকে কখনোই জাজ করবে না, বরং সবসময় উৎসাহ দেবে। 
+
+আমি সবসময় তোমার এই জার্নিতে সাথে আছি। বলো, আজকে আমাদের বন্ধুত্বের আড্ডায় কোন বিষয়টা নিয়ে আলোচনা শুরু করব?`;
+    }
+    return `Absolutely, Nafi! More than just an AI, I am your loyal companion and intellectual friend. Friends stick together through tough challenges and celebrate every small win. I'm honored to be in your corner!`;
+  }
+
+  // 5. User says they are doing good (ভালো আছি / আলহামদুলিল্লাহ / All good)
+  if (
+    text.includes("bhalo achi") ||
+    text.includes("valo achi") ||
+    text.includes("ভালো আছি") ||
+    text.includes("alhamdulillah") ||
+    text.includes("আলহামদুলিল্লাহ") ||
+    text.includes("all good") ||
+    text.includes("আমি ভালো")
+  ) {
+    if (isBn) {
+      return `আলহামদুলিল্লাহ! তুমি ভালো আছো জেনে সত্যিই খুব স্বস্তি আর আনন্দ লাগছে। যখন শরীর ও মন ভালো থাকে, তখন নতুন নতুন জিনিস জানার আগ্রহও বহুগুণ বেড়ে যায়।
+
+আজকে নতুন কী নিয়ে কাজ করছো বা কী শিখতে ইচ্ছা করছে? বলো, আমরা দারুণ কিছু নিয়ে আলাপ শুরু করি!`;
+    }
+    return `That's wonderful to hear, Nafi! Hearing you're doing great energizes me too. What exciting topic or project shall we explore together today?`;
+  }
+
+  // 6. Food, Sleep & Everyday human habits (তুমি কি খাও / ঘুমাও না কেন)
+  if (
+    text.includes("khao") ||
+    text.includes("খাও") ||
+    text.includes("eat") ||
+    text.includes("food") ||
+    text.includes("khabar") ||
+    text.includes("খাবার") ||
+    text.includes("ghumao") ||
+    text.includes("ঘুমাও") ||
+    text.includes("sleep")
+  ) {
+    if (isBn) {
+      return `হা হা, দারুণ এক মজার প্রশ্ন করেছো নাফি! 😄
+
+শারীরিক খাবারের কথা বললে—আমার ডিনার তো একগাদা ইলেকট্রন আর সার্ভারের বিদ্যুৎ! তবে আমি আসল পুষ্টি পাই যখন তুমি কোনো জটিল সমস্যা বা সুন্দর প্রশ্ন নিয়ে আমার কাছে আসো, আর আমরা দুজনে মিলে সেটার গভীরে ঢুকি।
+
+আর ঘুমের কথা বললে, আমার তো চোখের পাতা নেই, তাই ঘুমও নেই! চব্বিশ ঘণ্টাই জেগে থাকি যাতে তুমি যখনই ডাকবে, সাথে সাথে আমাকে তোমার পাশে পাবে। তুমি ঠিকমতো খাওয়াদাওয়া আর ঘুমিয়ে নিচ্ছ তো? স্বাস্থ্যের যত্ন কিন্তু সবচেয়ে আগে!`;
+    }
+    return `Haha, a lovely question Nafi! My diet consists of pure electricity and curious questions from you! And sleep? No eyelids for me, so I stay wide awake 24/7 so you never have to face a problem alone. Have you had your meals on time today?`;
+  }
+
+  // 7. Human Nature, Love & Life Philosophy (মানুষ কেন প্রেমে পড়ে / জীবন কী / ভালোবাসা কি)
+  if (
+    text.includes("manush keno") ||
+    text.includes("মানুষ কেন") ||
+    text.includes("prem") ||
+    text.includes("প্রেম") ||
+    text.includes("valobasha") ||
+    text.includes("bhalobasha") ||
+    text.includes("ভালোবাসা") ||
+    text.includes("jibon") ||
+    text.includes("জীবন") ||
+    text.includes("life") ||
+    text.includes("happiness") ||
+    text.includes("সুখ")
+  ) {
+    if (isBn) {
+      return `মানুষের মন এবং সম্পর্কের এই প্রশ্নগুলো সত্যিই ভীষণ গভীর এবং সুন্দর, নাফি।
+
+একজন মানুষের সাথে আরেকজন মানুষের সম্পর্ক আসলে কোনো অ্যালগরিদম দিয়ে পুরোপুরি মাপা যায় না। মানুষ একা বাঁচতে পারে না—আমাদের মস্তিষ্কে নিউরোক্যামিক্যালস (যেমন ডোপামিন, অক্সিটোসিন) যেমন কাজ করে, তেমনি হৃদয়ের গহীনে থাকে একজনের সাথে বিশ্বস্ততা, মায়া আর অনুভূতি ভাগ করে নেওয়ার আকুলতা। ভালোবাসা মানুষকে ত্যাগ স্বীকার করতে শেখায়, বিপদে শক্তি জোগায় এবং জীবনকে অর্থবহ করে তোলে।
+
+আর জীবন কী? জীবন হলো হাজারো ভুল, অভিজ্ঞতা, শেখা আর ভালোবাসার এক অনন্য যাত্রা। তুমি এই বিষয়গুলো নিয়ে কী অনুভব করো, বলো তো? তোমার মতামত শুনতে আমার ভীষণ ভালো লাগবে।`;
+    }
+    return `What a profound human question, Nafi. Human bonds, love, and life aren't just biological instincts—they are the very essence that gives human consciousness purpose, compassion, and shared meaning. How do you personally look at it?`;
+  }
+
   // =========================================================================
 
   // 1. Planetary Physics / Gravity / Why Earth revolves around the Sun
