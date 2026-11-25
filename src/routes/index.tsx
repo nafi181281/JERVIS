@@ -4,7 +4,7 @@ import { ArrowRight, Mic, MicOff, Square, Volume2, VolumeX, Trash2 } from "lucid
 import { Shell, Panel } from "@/components/jervis/Shell";
 import { Core } from "@/components/jervis/Core";
 import { Markdown } from "@/components/jervis/Markdown";
-import { LangToggle, VoicePicker } from "@/components/jervis/Controls";
+import { LangToggle, VoicePicker, ApiKeyDialog } from "@/components/jervis/Controls";
 import { useVoice, type Lang } from "@/hooks/use-voice";
 import { useJervisChat, textOf } from "@/hooks/use-jervis-chat";
 
@@ -24,9 +24,10 @@ export const Route = createFileRoute("/")({
 
 const SUGGEST = [
   "Explain binary search with a loop trace and Big-O",
-  "বাংলায় বুঝাও: linked list কী?",
-  "How do I connect to NeonDB from Node.js?",
-  "Difference between C++ pointers and Java references",
+  "বাংলায় গভীরভাবে বুঝাও: Linked List কী ও কেন ব্যবহার করব?",
+  "পৃথিবী কেন সূর্যের চারদিকে ঘোরে? বাস্তব উদাহরণ দিয়ে ব্যাখ্যা করো",
+  "How does the Internet work (DNS, TCP/IP & HTTP)?",
+  "Recursion কীভাবে কাজ করে? Call Stack সহ বিস্তারিত বুঝিয়ে দাও",
 ];
 
 function Home() {
@@ -148,7 +149,8 @@ function Home() {
         <Panel className="flex min-w-0 flex-col p-0">
           <div className="flex items-center justify-between gap-2 border-b border-primary/20 px-4 py-2.5">
             <h2 className="font-display text-[11px] uppercase tracking-[0.22em] text-foreground">Real-time assist</h2>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              <ApiKeyDialog />
               <LangToggle lang={lang} setLang={setLang} />
               <button
                 type="button"
