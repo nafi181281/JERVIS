@@ -4,7 +4,7 @@ import { Mic, MicOff, Send, Flag, RotateCcw, Volume2, Square } from "lucide-reac
 import { Shell, Panel } from "@/components/jervis/Shell";
 import { Core } from "@/components/jervis/Core";
 import { Markdown } from "@/components/jervis/Markdown";
-import { LangToggle, VoicePicker } from "@/components/jervis/Controls";
+import { LangToggle, VoicePicker, ApiKeyDialog } from "@/components/jervis/Controls";
 import { useJervisChat, textOf } from "@/hooks/use-jervis-chat";
 import { useVoice, type Lang } from "@/hooks/use-voice";
 
@@ -72,6 +72,7 @@ function Viva() {
               </select>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Language</span>
+                <ApiKeyDialog />
                 <LangToggle lang={lang} setLang={setLang} />
               </div>
               <button
